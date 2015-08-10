@@ -24,12 +24,7 @@ class Pattern
 		else
 			value *= 0.65;
 
-		setLEDs(new Color(value, value, value));
-	}
-
-	void setLEDs(Color c)
-	{
 		for(int i = 0; i < NUM_LEDS; i++)
-			leds[i] = c;
+			leds[i] = new Color(value, value, value);
 	}
 }
