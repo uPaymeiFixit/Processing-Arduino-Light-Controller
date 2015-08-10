@@ -39,9 +39,9 @@ After you have done this, you can download [Minim 2.2.0](http://code.compartment
 
 Next, move the FastSPI\_LED folder to Arduino's libraries folder. (Mac: ~/Documents/Arduino/libraries/)
 
-Open Light\_Organ\_Data\_Interpreter.ino, and flash it to the Arduino.
+Open Arduino/Light\_Organ\_Data\_Interpreter/Light\_Organ\_Data\_Interpreter.ino, and flash it to the Arduino.
 
-Open /main/main.pde and run it.
+Open Processing/main/main.pde and run it.
 
 Done! It should be working now. If it's not, you can mess around with some of the code such as NUM\_LEDS in Pattern.pde & Light\_Organ\_Data\_Interpreter.ino, or SERIAL\_INDEX in main.pde.
 
