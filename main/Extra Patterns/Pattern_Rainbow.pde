@@ -1,4 +1,4 @@
-// This pattern will light the light up when a kick drum sound is detected.
+// This pattern will fade the whole LED strip through a color wheel.
 
 class Pattern
 {
@@ -16,20 +16,11 @@ class Pattern
 
 	// After this function gets called, the "leds"
 	// array will be sent to the arduino.
-	int value = 0;
+	int counter = 0; 
 	void update()
 	{
-		if(beat.isKick())
-			value = 255;
-		else
-			value *= 0.65;
-
-		setLEDs(new Color(value, value, value));
-	}
-
-	void setLEDs(Color c)
-	{
+		counter++;
 		for(int i = 0; i < NUM_LEDS; i++)
-			leds[i] = c;
+			leds[i] = Color.getHSBColor((counter%360)/360.0, 1, 1);
 	}
 }

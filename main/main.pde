@@ -8,7 +8,7 @@ import java.awt.Color;
 static final boolean VISIBLE = false;
 static final int BUFFER_SIZE = 2048;
 static final int BAUD_RATE = 115200;
-static final int FRAME_RATE = 10; 
+static final int FRAME_RATE = 30; 
 static final int SERIAL_INDEX = 3;
 
 Minim minim;
