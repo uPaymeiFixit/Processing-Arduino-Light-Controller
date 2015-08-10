@@ -47,4 +47,6 @@ Done! It should be working now. If it's not, you can mess around with some of th
 
 Additionally, you can make your own patterns by changing/adding to Patterns.pde. After update() is called (which will be done automatically by main.pde), the leds array will be sent to the Arduino. You have access to Minim's Fast Fourier Transform and Beat Detect libraries. (fft & beat in Pattern.pde) If you are unfamiliar with these, I would suggest taking a look at [the documentation](http://code.compartmental.net/minim/index_analysis.html).
 
+If your Pattern.pde file analyzes sound, it will by default analyze the sound from your default input device. In Mac, you can reroute your audio output into an input using [Soundflower](https://rogueamoeba.com/freebies/soundflower/).
+
 Good luck!
