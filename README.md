@@ -35,17 +35,15 @@ AND the **negative of the power source** you are using. (If you are using a powe
 ###Software
 You will need to download [Processing](https://processing.org/download/) and [Arduino](https://www.arduino.cc/en/Main/Software). 
 
-After you have done this, you can download [Minim 2.2.0](http://code.compartmental.net/tools/minim/), unzip it, and place it in your Processing libraries folder. (Mac: ~/Documents/Processing/libraries/)
+After you have done this, open Processing/Processing.pde, go to Sketch -> Import Library... -> Add Library... -> search for "minim" -> click Install
 
-Next, move the FastSPI\_LED folder to Arduino's libraries folder. (Mac: ~/Documents/Arduino/libraries/)
+Next, open Arduino/Arduino.ino, and flash it to the Arduino.
 
-Open Arduino/Light\_Organ\_Data\_Interpreter/Light\_Organ\_Data\_Interpreter.ino, and flash it to the Arduino.
+Open run the Processing sketch you opened.
 
-Open Processing/main/main.pde and run it.
+Done! It should be working now. If it's not, you can mess around with some of the code such as NUM\_LEDS in PluginHandler.java & Arduino.ino.
 
-Done! It should be working now. If it's not, you can mess around with some of the code such as NUM\_LEDS in Pattern.pde & Light\_Organ\_Data\_Interpreter.ino, or SERIAL\_INDEX in main.pde.
-
-Additionally, you can make your own patterns by changing/adding to Patterns.pde. After update() is called (which will be done automatically by main.pde), the leds array will be sent to the Arduino. You have access to Minim's Fast Fourier Transform and Beat Detect libraries. (fft & beat in Pattern.pde) If you are unfamiliar with these, I would suggest taking a look at [the documentation](http://code.compartmental.net/minim/index_analysis.html).
+Additionally, you can make your own patterns by adding one to the Processing/Plugins/ folder where you will find examples to help you out.
 
 If your Pattern.pde file analyzes sound, it will by default analyze the sound from your default input device. In Mac, you can reroute your audio output into an input using [Soundflower](https://rogueamoeba.com/freebies/soundflower/).
 
