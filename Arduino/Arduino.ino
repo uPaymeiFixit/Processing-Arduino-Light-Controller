@@ -3,7 +3,7 @@
 //    PIN 13  -> CLK
 //    PIN 11  -> DAT
 
-#include <FastSPI_LED.h>
+#include "FastSPI_LED.h"
 
 // Change this to the number of LED segments you have
 #define NUM_LEDS 17
@@ -26,11 +26,11 @@ void setup()
 
   // Set the chipset.
   // Supported chipsets are
-  //    SPI_595   
+  //    SPI_595
   //    SPI_HL1606
   //    SPI_LPD6803 (This is what I am using.)
   //    SPI_WS2801
-  //    SPI_TM1809 
+  //    SPI_TM1809
   FastSPI_LED.setChipset(CFastSPI_LED::SPI_LPD6803);
 
   FastSPI_LED.init();
@@ -43,14 +43,14 @@ void setup()
 
 int buffer[NUM_LEDS*3];
 int buffer_length = 0;
-int lastBeacon = 0;
+int last_beacon = 0;
 void loop()
 {
-  // If BEACON_PERIODms has passed, send beacon to let the 
+  // If BEACON_PERIODms has passed, send beacon to let the
   // program know that we are an arduino running the program.
-  if (millis() > lastBeacon+BEACON_PERIOD)
+  if (millis() > last_beacon+BEACON_PERIOD)
   {
-    lastBeacon = millis();
+    last_beacon = millis();
     Serial.write(BEACON_KEY);
   }
 
