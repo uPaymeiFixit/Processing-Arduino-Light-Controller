@@ -1,17 +1,17 @@
-import ddf.minim.Minim;
 import ddf.minim.AudioInput;
-import ddf.minim.analysis.FFT;
+import ddf.minim.Minim;
 import ddf.minim.analysis.BeatDetect;
+import ddf.minim.analysis.FFT;
+import javax.sound.sampled.Mixer;
 import processing.serial.Serial;
-import java.awt.Color;
 
 // Sets the GUI to show/not show
 static final boolean VISIBLE = false;
 
 // Size of the audio input buffer
 static final int BUFFER_SIZE = 2048;
- 
-// Speed of draw() function
+
+// Speed of draw() function (units: per second)
 static final int FRAME_RATE = 30;
 
 // Time in between beacons
@@ -28,16 +28,14 @@ AudioInput in;
 SelectInput si;
 BeatDetect beat;
 FFT fft;
-Serial myPort;
-Pattern pattern;
+Serial serial_port;
+PluginHandler plugin;
 
 void setup()
 {
     // Set up minim / audio input
     minim = new Minim(this);
     autodetectInput();
-
-    //in = minim.getLineIn(Minim.STEREO, BUFFER_SIZE); // TODO Implement selection
 
     // Set up BeatDetect
     beat = new BeatDetect(in.bufferSize(), in.sampleRate());
@@ -53,8 +51,16 @@ void setup()
     // Set frame rate of draw()
     frameRate(FRAME_RATE);
 
-    // Import your custom pattern plugin
-    pattern = new Pattern(beat, fft);
+    // In Java this is the code we would use for the working_directory, but
+    // in Processing this does not work
+    //   String working_directory = MyClassName.class.getResource("").getPath();
+    // So we have to use this instead:
+    String sketch_location = sketchPath("")+"Plugins/";
+
+    String pluginName = "Rainbow";
+
+    // Import a custom pattern plugin
+    plugin = new PluginHandler(sketch_location, pluginName, beat, fft);
 }
 
 // Trys to find and set the Soundflower (2ch) input
@@ -64,15 +70,15 @@ void autodetectInput()
     Mixer.Info[] m = si.getInputs();
 
     // First we will set a default index, in case we don't find it.
-    int currentInput = 0;
+    int current_input = 0;
 
     // Next we will search for the input with the matching name.
     for (int i = 0; i < si.getInputs().length; i++)
-      if(si.getInputs()[i].getName().equals("Soundflower (2ch)"))
-        currentInput = i;
+        if(si.getInputs()[i].getName().equals("Soundflower (2ch)"))
+            current_input = i;
 
     // Now we set the input. If soundflower was found it should be set.
-    in = si.setInput(si.getInputs()[currentInput]);
+    in = si.setInput(si.getInputs()[current_input]);
 }
 
 // Finds the correct serial device to connect to
@@ -84,7 +90,7 @@ void autodetectSerial()
         boolean passed = true;
         try
         {
-            myPort = new Serial(this, Serial.list()[i], BAUD_RATE);
+            serial_port = new Serial(this, Serial.list()[i], BAUD_RATE);
         }
         catch (Exception e)
         {
@@ -96,7 +102,7 @@ void autodetectSerial()
             // We will wait for the device to send us information
             delay(BEACON_PERIOD+1);
             // If the device sends us a matching byte, we found it
-            if (myPort.read() == BEACON_KEY)
+            if (serial_port.read() == BEACON_KEY)
                 return;
         }
     }
@@ -105,16 +111,16 @@ void autodetectSerial()
 void draw()
 {
     // We will let the plugin update the leds array
-    pattern.update();
+    plugin.update();
 
     // After that we will send the array to the Arduino
     // The format of the expected data is as follows:
     //    [red0, green0, blue0, red1, green1, blue1, (...), redn, greenn, bluen]
-    for(int i = 0; i < pattern.leds.length; i++)
+    for(int i = 0; i < plugin.leds.length; i++)
     {
-        myPort.write(pattern.leds[i].getRed());
-        myPort.write(pattern.leds[i].getGreen());
-        myPort.write(pattern.leds[i].getBlue());
+        serial_port.write(plugin.leds[i][0]);
+        serial_port.write(plugin.leds[i][1]);
+        serial_port.write(plugin.leds[i][2]);
     }
 }
 
@@ -123,10 +129,10 @@ public void stop() {
     in.close();
     minim.stop();
     // Close serial port so others can use it
-    myPort.stop();
+    serial_port.stop();
     super.stop();
 }
 
-boolean displayable() { 
-    return VISIBLE; 
+boolean displayable() {
+    return VISIBLE;
 }
