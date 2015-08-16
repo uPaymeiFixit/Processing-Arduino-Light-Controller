@@ -23,30 +23,27 @@ static final byte BEACON_KEY = 42;
 // Serial baud rate. Should match desktop program.
 static final int BAUD_RATE = 115200;
 
-Minim minim;
-AudioInput in;
-SelectInput si;
-BeatDetect beat;
-FFT fft;
-Serial serial_port;
-PluginHandler plugin;
+Minim minim;          // Needs global for stop() and setup()
+AudioInput in;        // Needs global for stop() and setup()
+Serial serial_port;   // Needs global for draw() and setup()
+PluginHandler plugin; // Needs global for draw() and setup()
 
 void setup()
 {
     // Set up minim / audio input
     minim = new Minim(this);
-    autodetectInput();
+    in = autodetectInput();
 
     // Set up BeatDetect
-    beat = new BeatDetect(in.bufferSize(), in.sampleRate());
+    BeatDetect beat = new BeatDetect(in.bufferSize(), in.sampleRate());
     new BeatListener(beat, in);
 
     // Set up FFT
-    fft = new FFT(in.bufferSize(), in.sampleRate());
+    FFT fft = new FFT(in.bufferSize(), in.sampleRate());
     new FFTListener(fft, in);
 
     // Set up Serial
-    autodetectSerial();
+    serial_port = autodetectSerial();
 
     // Set frame rate of draw()
     frameRate(FRAME_RATE);
@@ -64,9 +61,9 @@ void setup()
 }
 
 // Trys to find and set the Soundflower (2ch) input
-void autodetectInput()
+AudioInput autodetectInput()
 {
-    si = new SelectInput(Minim.STEREO, BUFFER_SIZE);
+    SelectInput si = new SelectInput(Minim.STEREO, BUFFER_SIZE);
     Mixer.Info[] m = si.getInputs();
 
     // First we will set a default index, in case we don't find it.
@@ -78,11 +75,11 @@ void autodetectInput()
             current_input = i;
 
     // Now we set the input. If soundflower was found it should be set.
-    in = si.setInput(si.getInputs()[current_input]);
+    return si.setInput(si.getInputs()[current_input]);
 }
 
 // Finds the correct serial device to connect to
-void autodetectSerial()
+Serial autodetectSerial()
 {
     // Run through each Serial device
     for(int i = 0; i < Serial.list().length; i++)
@@ -103,9 +100,11 @@ void autodetectSerial()
             delay(BEACON_PERIOD+1);
             // If the device sends us a matching byte, we found it
             if (serial_port.read() == BEACON_KEY)
-                return;
+                return serial_port;
         }
     }
+    // If we've gotten this far, there are no more devices left
+    return null;
 }
 
 void draw()
