@@ -27,20 +27,17 @@
 	leds[][] array will be sent to the Arduino. */
 
 
-// This example will pulse when a kick drum sound is detected from the
-// 	audio input. (Soundflower (2ch) by default)
-var value = 0;
+// This example will set the LEDs to red
+
+// We're never changing the color from red, so we only need to execute this
+// code once. Therefore, we will put it outside the update function so that
+// it's not run every time update is called.
+for(var i = 0; i < leds.length; i++)
+{
+	leds[i][0] = 255;
+}
+
 function update()
 {
-	if ( BeatDetect.isKick() )
-		value = 255;
-	else
-		value *= 0.65;
 
-	for(var i = 0; i < leds.length; i++)
-	{
-		leds[i][0] = value;
-		leds[i][1] = value;
-		leds[i][2] = value;
-	}
 }

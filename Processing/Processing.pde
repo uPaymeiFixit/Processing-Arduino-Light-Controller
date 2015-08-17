@@ -32,7 +32,8 @@ void setup()
 {
     // Set up minim / audio input
     minim = new Minim(this);
-    in = autodetectInput();
+    SelectInput select_input = new SelectInput(Minim.STEREO, BUFFER_SIZE);
+    in = autodetectInput( select_input );
 
     // Set up BeatDetect
     BeatDetect beat = new BeatDetect(in.bufferSize(), in.sampleRate());
@@ -52,31 +53,32 @@ void setup()
     // in Processing this does not work
     //   String working_directory = MyClassName.class.getResource("").getPath();
     // So we have to use this instead:
-    String sketch_location = sketchPath("")+"Plugins/"; // TODO - This folder isn't here when you export the program.
-
-    String plugin_name = "Rainbow";
+    // TODO - This folder isn't here when you export the program.
+    String plugins_directory = sketchPath("")+"Plugins/";
 
     // Import a custom pattern plugin
-    plugin = new PluginHandler(sketch_location, beat, fft);
-    plugin.load(plugin_name);
+    plugin = new PluginHandler(plugins_directory, beat, fft);
+    //plugin.load("KickDetect");
+
+    // Load the system tray
+    new SystemTrayHandler(plugin, plugins_directory, select_input);
 }
 
 // Trys to find and set the Soundflower (2ch) input
-AudioInput autodetectInput()
+AudioInput autodetectInput(SelectInput select_input)
 {
-    SelectInput si = new SelectInput(Minim.STEREO, BUFFER_SIZE);
-    Mixer.Info[] m = si.getInputs();
+    Mixer.Info[] m = select_input.getInputs();
 
     // First we will set a default index, in case we don't find it.
     int current_input = 0;
 
     // Next we will search for the input with the matching name.
-    for (int i = 0; i < si.getInputs().length; i++)
-        if(si.getInputs()[i].getName().equals("Soundflower (2ch)"))
+    for (int i = 0; i < select_input.getInputs().length; i++)
+        if(select_input.getInputs()[i].getName().equals("Soundflower (2ch)"))
             current_input = i;
 
     // Now we set the input. If soundflower was found it should be set.
-    return si.setInput(si.getInputs()[current_input]);
+    return select_input.setInput(select_input.getInputs()[current_input]);
 }
 
 // Finds the correct serial device to connect to
