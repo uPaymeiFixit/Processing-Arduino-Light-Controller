@@ -52,12 +52,13 @@ void setup()
     // in Processing this does not work
     //   String working_directory = MyClassName.class.getResource("").getPath();
     // So we have to use this instead:
-    String sketch_location = sketchPath("")+"Plugins/";
+    String sketch_location = sketchPath("")+"Plugins/"; // TODO - This folder isn't here when you export the program.
 
-    String pluginName = "Rainbow";
+    String plugin_name = "Rainbow";
 
     // Import a custom pattern plugin
-    plugin = new PluginHandler(sketch_location, pluginName, beat, fft);
+    plugin = new PluginHandler(sketch_location, beat, fft);
+    plugin.load(plugin_name);
 }
 
 // Trys to find and set the Soundflower (2ch) input

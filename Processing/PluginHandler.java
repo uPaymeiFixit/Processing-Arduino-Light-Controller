@@ -11,43 +11,51 @@ public class PluginHandler
 {
     public byte[][] leds;
     private Invocable invocable_engine;
+    private BeatDetect beat;
+    private FFT fft;
+    private String plugins_directory;
 
-    public PluginHandler(String sketch_location, String plugin_name, BeatDetect beat, FFT fft)
+    public PluginHandler(String plugins_directory, BeatDetect beat, FFT fft)
     {
         final int NUM_LEDS = 17; // TODO User definable
 
-        loadPlugin(sketch_location, plugin_name, beat, fft, NUM_LEDS);
+        this.plugins_directory = plugins_directory;
+        this.beat = beat;
+        this.fft = fft;
+
+        // Initialize the leds array
+        leds = new byte[NUM_LEDS][3];
+
+        // Zero-out the array in case the plugin dev does something stupid
+        for(int i = 0; i < NUM_LEDS; i++)
+        {
+            leds[i][0] = 0;
+            leds[i][1] = 0;
+            leds[i][2] = 0;
+        }
     }
 
     public void update()
     {
-        try
+        if ( invocable_engine != null )
         {
-            // invoke the global function named "update"
-            invocable_engine.invokeFunction("update");
+            try
+            {
+                // invoke the global function named "update"
+                invocable_engine.invokeFunction("update");
+            }
+            catch (ScriptException e)       {e.printStackTrace();}
+            catch (NoSuchMethodException e) {e.printStackTrace();}
         }
-        catch (ScriptException e)       {e.printStackTrace();}
-        catch (NoSuchMethodException e) {e.printStackTrace();}
     }
 
-    private void loadPlugin(String sketch_location, String plugin_name, BeatDetect beat, FFT fft, int num_leds)
+    public void load(String plugin_name)
     {
         // create a script engine manager
         ScriptEngineManager factory = new ScriptEngineManager();
 
         // create a script engine
         ScriptEngine engine = factory.getEngineByName("JavaScript");
-
-        // Initialize our array
-        leds = new byte[num_leds][3];
-
-        // zero-out the array in case the plugin dev does something stupid
-        for(int i = 0; i < num_leds; i++)
-        {
-            leds[i][0] = 0;
-            leds[i][1] = 0;
-            leds[i][2] = 0;
-        }
 
         // expose leds array, beat, and fft as variables to script to be used
         engine.put("leds", leds);
@@ -56,7 +64,7 @@ public class PluginHandler
 
         try
         {
-            String file_location = sketch_location + plugin_name + ".js";
+            String file_location = plugins_directory + plugin_name + ".js";
             // evaluate JavaScript code from given file
             engine.eval(new FileReader(file_location));
         }
