@@ -17,7 +17,7 @@ public class PluginHandler
 
     public PluginHandler(String plugins_directory, BeatDetect beat, FFT fft)
     {
-        final int NUM_LEDS = 17; // TODO User definable
+        final int NUM_LEDS = 17; // TODO: User definable
 
         this.plugins_directory = plugins_directory;
         this.beat = beat;
@@ -61,6 +61,7 @@ public class PluginHandler
         engine.put("leds", leds);
         engine.put("FFT", fft);
         engine.put("BeatDetect", beat);
+        // TODO: put a changeIcon method
 
         try
         {

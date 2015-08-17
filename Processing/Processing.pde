@@ -14,7 +14,7 @@ static final int BUFFER_SIZE = 2048;
 // Speed of draw() function (units: per second)
 static final int FRAME_RATE = 30;
 
-// Time in between beacons
+// Time in between beacons (units: milliseconds)
 static final int BEACON_PERIOD = 500;
 
 // Unique byte that the desktop program should recognize
@@ -22,6 +22,8 @@ static final byte BEACON_KEY = 42;
 
 // Serial baud rate. Should match desktop program.
 static final int BAUD_RATE = 115200;
+// TODO: Check to see if Leonardo doesn't support this baud rate
+// TODO: maybe add a setting to set the baud rate OR arduino board
 
 Minim minim;          // Needs global for stop() and setup()
 AudioInput in;        // Needs global for stop() and setup()
@@ -53,7 +55,7 @@ void setup()
     // in Processing this does not work
     //   String working_directory = MyClassName.class.getResource("").getPath();
     // So we have to use this instead:
-    // TODO - This folder isn't here when you export the program.
+    // TODO: This folder isn't here when you export the program.
     String plugins_directory = sketchPath("")+"Plugins/";
 
     // Import a custom pattern plugin
@@ -61,7 +63,7 @@ void setup()
     //plugin.load("KickDetect");
 
     // Load the system tray
-    new SystemTrayHandler(plugin, plugins_directory, select_input);
+    new SystemTrayHandler(plugin, plugins_directory, select_input, in);
 }
 
 // Trys to find and set the Soundflower (2ch) input
@@ -84,6 +86,7 @@ AudioInput autodetectInput(SelectInput select_input)
 // Finds the correct serial device to connect to
 Serial autodetectSerial()
 {
+    Serial serial_port = null;
     // Run through each Serial device
     for(int i = 0; i < Serial.list().length; i++)
     {
@@ -107,6 +110,8 @@ Serial autodetectSerial()
         }
     }
     // If we've gotten this far, there are no more devices left
+    // TODO:- add a message saying maybe Arduino is Open
+    // TODO:- in the readme say to quit Arduino Studio
     return null;
 }
 

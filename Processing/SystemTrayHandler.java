@@ -1,3 +1,4 @@
+import ddf.minim.AudioInput;
 import java.awt.AWTException;
 import java.awt.Image;
 import java.awt.Menu;
@@ -14,12 +15,22 @@ import javax.sound.sampled.Mixer;
 public class SystemTrayHandler
 {
 	private PluginHandler plugin;
-	public SystemTrayHandler(PluginHandler plugin, String plugins_directory, SelectInput select_input)
+	private AudioInput in;
+	private SelectInput select_input;
+
+	public SystemTrayHandler(PluginHandler plugin,
+							 String plugins_directory,
+							 SelectInput select_input,
+							 AudioInput in)
 	{
 		this.plugin = plugin;
+		this.in = in;
+		this.select_input = select_input;
+
 		if ( SystemTray.isSupported() )
 		{
 			final PopupMenu popup = new PopupMenu();
+			// TODO: change this to a non-local reference
 			final Image image = Toolkit.getDefaultToolkit().getImage( "/Users/Josh/github/Processing-Arduino-Light-Organ/Processing/icon.gif" );
 			final TrayIcon trayIcon = new TrayIcon( image, "Light Organ" );
 			final SystemTray tray = SystemTray.getSystemTray();
@@ -32,7 +43,7 @@ public class SystemTrayHandler
 
 			Menu audio_input_menu = new Menu( "Audio Input" );
 			popup.add( audio_input_menu );
-				addAudioInputs( audio_input_menu, select_input );
+				addAudioInputs( audio_input_menu );
 
 			Menu settings = new Menu( "Settings " );
 			popup.add( settings );
@@ -42,6 +53,7 @@ public class SystemTrayHandler
 
 			MenuItem exit = new MenuItem( "Exit" );
 			popup.add( exit );
+			// System.exit(0);
 
 			trayIcon.setPopupMenu( popup );
 
@@ -87,7 +99,7 @@ public class SystemTrayHandler
 					 file.substring( file.length()-3).equals( ".js" ) )
 	            {
 	                // Gets the name of the file and takes the extension off the end
-					// TODO - Every time this funciton gets called, thse strings
+					// TODO: Every time this funciton gets called, thse strings
 					// will build up. This is a memory leak I'm too lazy to fix
 					// at the moment. But hey, at least I recognized the problem.
 	                final String file_name =  file.split( "\\.", 2 )[0];
@@ -124,12 +136,29 @@ public class SystemTrayHandler
         }
 	}
 
-	void addAudioInputs( Menu menu, SelectInput select_input )
+	void addAudioInputs( Menu menu )
 	{
 		Mixer.Info[] m = select_input.getInputs();
 		RadioMenuItemGroup input_group = new RadioMenuItemGroup();
 		for (int i = 0; i < select_input.getInputs().length; i++)
-			menu.add( new RadioMenuItem( select_input.getInputs()[i].getName(), input_group ) );
+		{
+			final int index = i;
+			RadioMenuItem audio_option = new RadioMenuItem( select_input.getInputs()[i].getName(), input_group );
+			audio_option.addItemListener( new ItemListener()
+			{
+				@Override
+				public void itemStateChanged( ItemEvent e )
+				{
+					if ( e.getStateChange() == ItemEvent.SELECTED )
+					{
+						// TODO: FIX THIS IN THE MORNING - needs to be Final
+						in = select_input.setInput( select_input.getInputs()[index] );
+					}
+				}
+			});
+
+			menu.add( audio_option );
+		}
 	}
 
 	void addSettings( Menu menu )
