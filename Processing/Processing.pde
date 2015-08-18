@@ -51,19 +51,18 @@ void setup()
     // Set frame rate of draw()
     frameRate(FRAME_RATE);
 
+    // Import a custom pattern plugin
+    plugin = new PluginHandler(beat, fft);
+
     // In Java this is the code we would use for the working_directory, but
     // in Processing this does not work
     //   String working_directory = MyClassName.class.getResource("").getPath();
     // So we have to use this instead:
     // TODO: This folder isn't here when you export the program.
-    String plugins_directory = sketchPath("")+"Plugins/";
-
-    // Import a custom pattern plugin
-    plugin = new PluginHandler(plugins_directory, beat, fft);
-    //plugin.load("KickDetect");
+    String working_directory = sketchPath("");
 
     // Load the system tray
-    new SystemTrayHandler(plugin, plugins_directory, select_input, in);
+    new SystemTrayHandler(plugin, working_directory, select_input, in);
 }
 
 // Trys to find and set the Soundflower (2ch) input
@@ -93,41 +92,55 @@ Serial autodetectSerial()
         boolean passed = true;
         try
         {
+            System.out.println( "Trying serial port " + Serial.list()[i] );
             serial_port = new Serial(this, Serial.list()[i], BAUD_RATE);
         }
         catch (Exception e)
         {
+            System.out.println( "    Could not connect. Maybe it was busy.\n" );
             passed = false;
         }
         // If we were able to establish a connection without exception...
         if(passed)
         {
+            System.out.println( "    Connected.\n    Listening for Arduino beacon..." );
             // We will wait for the device to send us information
             delay(BEACON_PERIOD+1);
             // If the device sends us a matching byte, we found it
             if (serial_port.read() == BEACON_KEY)
+            {
+                System.out.println( "    \nArduino found on " + Serial.list()[i] + '\n' );
                 return serial_port;
+            }
+            System.out.println( "    We didn't receive the Arduino beacon.\n" );
         }
     }
     // If we've gotten this far, there are no more devices left
     // TODO:- add a message saying maybe Arduino is Open
     // TODO:- in the readme say to quit Arduino Studio
+    System.out.println("We couldn't find the Arduino!\n"+
+                       "Are you sure it's plugged in?\n"+
+                       "Are any programs such as the Arduino IDE using it?\n"+
+                       "If you still need help take a look at the following link:\n"+
+                       "https://github.com/processing/processing/wiki/Serial-Issues");
     return null;
 }
 
 void draw()
 {
     // We will let the plugin update the leds array
-    plugin.update();
-
-    // After that we will send the array to the Arduino
-    // The format of the expected data is as follows:
-    //    [red0, green0, blue0, red1, green1, blue1, (...), redn, greenn, bluen]
-    for(int i = 0; i < plugin.leds.length; i++)
+    if ( plugin.update() )
     {
-        serial_port.write(plugin.leds[i][0]);
-        serial_port.write(plugin.leds[i][1]);
-        serial_port.write(plugin.leds[i][2]);
+
+        // After that we will send the array to the Arduino
+        // The format of the expected data is as follows:
+        //    [red0, green0, blue0, red1, green1, blue1, (...), redn, greenn, bluen]
+        for(int i = 0; i < plugin.leds.length; i++)
+        {
+            serial_port.write(plugin.leds[i][0]);
+            serial_port.write(plugin.leds[i][1]);
+            serial_port.write(plugin.leds[i][2]);
+        }
     }
 }
 

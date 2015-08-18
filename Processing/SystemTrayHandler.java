@@ -24,20 +24,20 @@ public class SystemTrayHandler
 	private String plugins_directory;
 
 	public SystemTrayHandler(PluginHandler plugin,
-							 String plugins_directory,
+							 String working_directory,
 							 SelectInput select_input,
 							 AudioInput in)
 	{
 		this.plugin = plugin;
 		this.in = in;
 		this.select_input = select_input;
-		this.plugins_directory = plugins_directory;
+		this.plugins_directory = working_directory + "Plugins/";
 
 		if ( SystemTray.isSupported() )
 		{
 			final PopupMenu popup = new PopupMenu();
 			// TODO: change this to a non-local reference
-			final Image image = Toolkit.getDefaultToolkit().getImage( "/Users/Josh/github/Processing-Arduino-Light-Organ/Processing/icon.gif" );
+			final Image image = Toolkit.getDefaultToolkit().getImage( working_directory + "icon.gif" );
 			final TrayIcon trayIcon = new TrayIcon( image, "Light Organ" );
 			final SystemTray tray = SystemTray.getSystemTray();
 
@@ -64,6 +64,11 @@ public class SystemTrayHandler
 			    public void actionPerformed( ActionEvent e )
 			    {
 					// Exits the program
+					// plugin.resetLeds();
+					// TODO: Decide whether or not LEDS should turn off when
+					// program exits.
+					// 		Pros: You can set a color and then quit the program
+					// 		Cons: For LEDS to turn off, user has to unload plugins
 					System.exit(0);
 			    }
 			});
