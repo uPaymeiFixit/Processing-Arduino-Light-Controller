@@ -34,7 +34,7 @@ void setup()
 {
     // Set up minim / audio input
     minim = new Minim(this);
-    SelectInput select_input = new SelectInput(Minim.STEREO, BUFFER_SIZE);
+    SelectInput select_input = new SelectInput(minim, Minim.STEREO, BUFFER_SIZE);
     in = autodetectInput( select_input );
 
     // Set up BeatDetect
@@ -63,6 +63,8 @@ void setup()
 
     // Load the system tray
     new SystemTrayHandler(plugin, working_directory, select_input, in);
+
+    plugin.load(working_directory+"Plugins/Kick Detect.js");
 }
 
 // Trys to find and set the Soundflower (2ch) input
@@ -85,6 +87,13 @@ AudioInput autodetectInput(SelectInput select_input)
 // Finds the correct serial device to connect to
 Serial autodetectSerial()
 {
+    if (true)
+    {
+        // This line is for dev purposes, skips the waiting
+        println(Serial.list());
+        return new Serial(this, Serial.list()[3], BAUD_RATE);
+    }
+
     Serial serial_port = null;
     // Run through each Serial device
     for(int i = 0; i < Serial.list().length; i++)
@@ -93,7 +102,7 @@ Serial autodetectSerial()
         try
         {
             System.out.println( "Trying serial port " + Serial.list()[i] );
-            serial_port = new Serial(this, Serial.list()[i], BAUD_RATE);
+            serial_port = new Serial( this, Serial.list()[i], BAUD_RATE );
         }
         catch (Exception e)
         {
@@ -123,6 +132,7 @@ Serial autodetectSerial()
                        "Are any programs such as the Arduino IDE using it?\n"+
                        "If you still need help take a look at the following link:\n"+
                        "https://github.com/processing/processing/wiki/Serial-Issues");
+    System.exit(0);
     return null;
 }
 
@@ -131,6 +141,7 @@ void draw()
     // We will let the plugin update the leds array
     if ( plugin.update() )
     {
+        System.out.println("              "+in.mix.get(0));
 
         // After that we will send the array to the Arduino
         // The format of the expected data is as follows:

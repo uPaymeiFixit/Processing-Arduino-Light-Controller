@@ -17,37 +17,29 @@ public class SelectInput
     private Mixer.Info[] usable_inputs;
     private int usable_inputs_size = 0;
 
-    public SelectInput(int channel, int buffer_size)
+    public SelectInput(Minim minim, int channel, int buffer_size)
     {
+        this.minim = minim;
         this.channel = channel;
         this.buffer_size = buffer_size;
 
         AudioInput in;
-        minim = new Minim(this);
         mixer_info = AudioSystem.getMixerInfo();
         Mixer.Info[] usable_inputs_temp = new Mixer.Info[mixer_info.length];
 
         for(int i = 0; i < mixer_info.length; i++)
         {
-            boolean passed = true;
-            try
-            {
-                // Set the i-th input and try getting data from it.
-                mixer = AudioSystem.getMixer(mixer_info[i]);
-                minim.setInputMixer(mixer);
-                in = minim.getLineIn(channel, buffer_size);
 
-                // (we try to pull some data from the input,
-                //    this is what crashes invalid inputs)
-                in.left.get(0);
-            }
-            catch (NullPointerException e)
+            // Set the i-th input and try getting data from it.
+            mixer = AudioSystem.getMixer(mixer_info[i]);
+            minim.setInputMixer(mixer);
+            // If it's null, we cannot use it
+            if ( minim.getLineIn(channel, buffer_size) != null )
             {
-                // If it crashes, we cannot use it.
-                passed = false;
+                // Otherwise we can
+                in = minim.getLineIn(channel, buffer_size);
+                usable_inputs_temp[usable_inputs_size++] = mixer_info[i];
             }
-            // But if it doesn't, then we can.
-            if (passed) usable_inputs_temp[usable_inputs_size++] = mixer_info[i];
         }
 
         usable_inputs = new Mixer.Info[usable_inputs_size];

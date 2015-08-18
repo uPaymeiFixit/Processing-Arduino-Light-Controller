@@ -1,0 +1,5 @@
+Get BeatDetect working
+Get Audio Input selection working
+Get LED count selection working
+Throw errors as popups
+Get chipset select working

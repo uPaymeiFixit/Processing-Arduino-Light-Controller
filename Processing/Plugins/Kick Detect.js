@@ -32,6 +32,7 @@
 var brightness = 0;
 function update()
 {
+	print("     " + BeatDetect.isKick());
 	if ( BeatDetect.isKick() )
 	{
 		brightness = 255;

@@ -36,7 +36,6 @@ public class SystemTrayHandler
 		if ( SystemTray.isSupported() )
 		{
 			final PopupMenu popup = new PopupMenu();
-			// TODO: change this to a non-local reference
 			final Image image = Toolkit.getDefaultToolkit().getImage( working_directory + "icon.gif" );
 			final TrayIcon trayIcon = new TrayIcon( image, "Light Organ" );
 			final SystemTray tray = SystemTray.getSystemTray();
@@ -174,8 +173,15 @@ public class SystemTrayHandler
 		RadioMenuItemGroup input_group = new RadioMenuItemGroup();
 		for (int i = 0; i < select_input.getInputs().length; i++)
 		{
+			boolean state = false;
+			if ( select_input.getInputs()[i].getName().equals( "Soundflower (2ch)" ) )
+			{
+				in = select_input.setInput(select_input.getInputs()[i]);
+				state = true;
+			}
+
 			final int index = i;
-			RadioMenuItem audio_option = new RadioMenuItem( select_input.getInputs()[i].getName(), input_group );
+			RadioMenuItem audio_option = new RadioMenuItem( select_input.getInputs()[i].getName(), input_group, state );
 			audio_option.addItemListener( new ItemListener()
 			{
 				@Override
@@ -183,7 +189,7 @@ public class SystemTrayHandler
 				{
 					if ( e.getStateChange() == ItemEvent.SELECTED )
 					{
-						// TODO: FIX THIS IN THE MORNING - needs to be Final
+						in.close();
 						in = select_input.setInput( select_input.getInputs()[index] );
 					}
 				}

@@ -29,6 +29,11 @@ public class PluginHandler
 
     public boolean update()
     {
+        // TODO: Find a better solution than calling beat.isKick() every update
+        // I haven't looked at the source of BeatDetect yet, but it seems like
+        // if the class is left alone long enough, it won't work. So we'll call
+        // it here. This isn't a great solution, but it works for now.
+        System.out.println(beat.isKick());
         if ( invocable_engine != null )
         {
             try

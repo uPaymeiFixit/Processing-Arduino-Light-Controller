@@ -19,11 +19,13 @@ public class BeatListener implements AudioListener
 
     public void samples(float[] samples)
     {
+        System.out.println("          mix");
         beat.detect(source.mix);
     }
 
     public void samples(float[] samples_left, float[] samples_right)
     {
+        System.out.println("          leri");
         beat.detect(source.mix);
     }
 }
