@@ -14,11 +14,10 @@ public class PluginHandler
     private BeatDetect beat;
     private FFT fft;
     private String plugins_directory;
+    private int NUM_LEDS = 17; // TODO: User definabel
 
     public PluginHandler(String plugins_directory, BeatDetect beat, FFT fft)
     {
-        final int NUM_LEDS = 17; // TODO: User definable
-
         this.plugins_directory = plugins_directory;
         this.beat = beat;
         this.fft = fft;
@@ -49,7 +48,18 @@ public class PluginHandler
         }
     }
 
-    public void load(String plugin_name)
+    public void unload()
+    {
+        invocable_engine = null;
+        for(int i = 0; i < NUM_LEDS; i++)
+        {
+            leds[i][0] = 0;
+            leds[i][1] = 0;
+            leds[i][2] = 0;
+        }
+    }
+
+    public void load(String file_location)
     {
         // create a script engine manager
         ScriptEngineManager factory = new ScriptEngineManager();
@@ -65,7 +75,6 @@ public class PluginHandler
 
         try
         {
-            String file_location = plugins_directory + plugin_name + ".js";
             // evaluate JavaScript code from given file
             engine.eval(new FileReader(file_location));
         }

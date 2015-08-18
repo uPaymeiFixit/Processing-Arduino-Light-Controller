@@ -132,6 +132,7 @@ void draw()
 }
 
 public void stop() {
+    System.out.println("The system is halting!");
     // always close Minim audio classes when you are done with them
     in.close();
     minim.stop();

@@ -1,5 +1,6 @@
 import ddf.minim.AudioInput;
 import java.awt.AWTException;
+import java.awt.Desktop;
 import java.awt.Image;
 import java.awt.Menu;
 import java.awt.MenuItem;
@@ -7,9 +8,12 @@ import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.IOException;
 import javax.sound.sampled.Mixer;
 
 public class SystemTrayHandler
@@ -17,6 +21,7 @@ public class SystemTrayHandler
 	private PluginHandler plugin;
 	private AudioInput in;
 	private SelectInput select_input;
+	private String plugins_directory;
 
 	public SystemTrayHandler(PluginHandler plugin,
 							 String plugins_directory,
@@ -26,6 +31,7 @@ public class SystemTrayHandler
 		this.plugin = plugin;
 		this.in = in;
 		this.select_input = select_input;
+		this.plugins_directory = plugins_directory;
 
 		if ( SystemTray.isSupported() )
 		{
@@ -37,7 +43,7 @@ public class SystemTrayHandler
 
 			Menu plugins_menu = new Menu( "Plugins" );
 			popup.add( plugins_menu );
-				addPlugins( plugins_menu, plugins_directory );
+				addPlugins( plugins_menu );
 
 			popup.addSeparator();
 
@@ -52,8 +58,16 @@ public class SystemTrayHandler
 			popup.addSeparator();
 
 			MenuItem exit = new MenuItem( "Exit" );
+			exit.addActionListener( new ActionListener()
+			{
+				@Override
+			    public void actionPerformed( ActionEvent e )
+			    {
+					// Exits the program
+					System.exit(0);
+			    }
+			});
 			popup.add( exit );
-			// System.exit(0);
 
 			trayIcon.setPopupMenu( popup );
 
@@ -70,9 +84,22 @@ public class SystemTrayHandler
 		}
 	}
 
-	void addPlugins( Menu menu, String plugins_directory )
+	void addPlugins( Menu menu )
 	{
 		MenuItem open_plugins_folder = new MenuItem( "Open Plugins Folder..." );
+		open_plugins_folder.addActionListener( new ActionListener()
+		{
+			@Override
+			public void actionPerformed( ActionEvent event )
+			{
+				try
+				{
+				// Open the Plugins folder
+				Desktop.getDesktop().open( new File( plugins_directory ) );
+				}
+				catch ( IOException e ) { e.printStackTrace(); }
+			}
+		});
 		menu.add( open_plugins_folder );
 
 		menu.addSeparator();
@@ -92,20 +119,16 @@ public class SystemTrayHandler
         {
 			String file = files[i].getName();
 			// If the "file" name is less than 3, it cannot be a .js file.
-			if ( file.length() >= 3 )
+			if ( files[i].isFile() && file.length() >= 3 )
 			{
 				// If the "file" is a file and it's name ends with .js, load it
-	            if ( files[i].isFile() &&
-					 file.substring( file.length()-3).equals( ".js" ) )
+	            if ( file.substring( file.length()-3).equals( ".js" ) )
 	            {
 	                // Gets the name of the file and takes the extension off the end
-					// TODO: Every time this funciton gets called, thse strings
-					// will build up. This is a memory leak I'm too lazy to fix
-					// at the moment. But hey, at least I recognized the problem.
-	                final String file_name =  file.split( "\\.", 2 )[0];
-
+	                String file_name =  file.split( "\\.", 2 )[0];
+					final String file_location = files[i].getPath();
 	                // Create a radio item based on this name and set the group
-	                RadioMenuItem radio = new RadioMenuItem( file_name, group );
+	                final RadioMenuItem radio = new RadioMenuItem( file_name, group );
 
 	                // When this item is clicked, we will load that plugin
 					radio.addItemListener( new ItemListener()
@@ -119,7 +142,11 @@ public class SystemTrayHandler
 								// but then we would be referring to a non-final
 								// variable inside an inner class defined in a
 								// different method. Throws errors and stuff.
-								plugin.load( file_name );
+								plugin.load( file_location );
+							}
+							else if ( radio.getRadioMenuItemGroup().getSelectedRadioMenuItem() == null )
+							{
+								plugin.unload();
 							}
 		                }
 		            });
