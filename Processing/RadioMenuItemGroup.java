@@ -6,12 +6,10 @@
  *
  * @title RadioMenuItemGroup.java
  * @author uPaymeiFixit
- * @version 1.0
- * @since 2015-08-16
+ * @version 1.2
+ * @since 2015-08-17
  */
 
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.ArrayList;
 
 public class RadioMenuItemGroup
@@ -29,7 +27,7 @@ public class RadioMenuItemGroup
 	// null if all radio menu itemes in the group are off.
 	public RadioMenuItem getSelectedRadioMenuItem()
 	{
-		for (RadioMenuItem radio : radios)
+		for ( RadioMenuItem radio : radios )
 			if ( radio.getState() )
 				return radio;
 		return null;
@@ -41,18 +39,18 @@ public class RadioMenuItemGroup
 	// If the radio menu item argument is null, all radio menu itemes in this radio menu item
 	// group are deselected. If the radio menu item argument belongs to a different
 	// radio menu item group, this method does nothing.
-	public void setSelectedRadioMenuItem(RadioMenuItem radio)
+	public void setSelectedRadioMenuItem( RadioMenuItem radio )
 	{
 		// If the user gave us a random RadioMenuItem not in this group, add it
 		if ( radio.getRadioMenuItemGroup() != this )
-			radio.setRadioMenuItemGroup(this);
+			radio.setRadioMenuItemGroup( this );
 
 		// Set all of the radios to off
-		for (RadioMenuItem _radio : radios)
-			_radio.setState(false);
+		for ( RadioMenuItem local_radio : radios )
+			local_radio.setState( false );
 
 		// Turn our radio on
-		radio.setState(true);
+		radio.setState( true );
 	}
 
 	// Returns a string representation of this radio menu item group, including the
@@ -60,32 +58,23 @@ public class RadioMenuItemGroup
 	public String toString()
 	{
 		// I don't know exactly how CheckboxGroup's toString works
-		String s = "[";
-		for(RadioMenuItem radio : radios)
-			s += radio.getLabel() + ": " + radio.getState() + ", ";
-		return s.substring(0, s.length()-2)+"]";
+		String output = "[";
+		for ( RadioMenuItem radio : radios )
+			output += radio.getLabel() + ": " + radio.getState() + ", ";
+		return output.substring( 0, output.length() - 2 )+"]";
 	}
 
 	// Custom methods
-	public void addRadioMenuItem(RadioMenuItem radio)
+	public void addRadioMenuItem( RadioMenuItem radio )
 	{
 		// If the user gave us a random RadioMenuItem not in this group, add it
 		if ( radio.getRadioMenuItemGroup() != this )
 		{
-			radio.setRadioMenuItemGroup(this);
+			radio.setRadioMenuItemGroup( this );
 		}
 		else
 		{
-			radios.add(radio);
-			radios.get(radios.size()-1).addItemListener( new ItemListener()
-			{
-				@Override
-				public void itemStateChanged(ItemEvent e)
-				{
-					if ( e.getStateChange() == ItemEvent.SELECTED )
-						radios.get(radios.size()-1).getRadioMenuItemGroup().setSelectedRadioMenuItem(radios.get(radios.size()-1));
-				}
-			});
+			radios.add( radio );
 
 			if ( radio.getState() )
 			{

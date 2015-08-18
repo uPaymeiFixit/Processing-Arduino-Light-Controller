@@ -7,38 +7,46 @@
  *
  * @title RadioMenuItem.java
  * @author uPaymeiFixit
- * @version 1.0
- * @since 2015-08-16
+ * @version 1.2
+ * @since 2015-08-17
  */
 
+
+ // When items are created without the group param
+ // they create their own group and attach an item listener to themeselves
+ // hten later if you assign them to another gourp they have another listener
+
 import java.awt.CheckboxMenuItem;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 public class RadioMenuItem extends CheckboxMenuItem
 {
+	private ItemListener listener;
 	private RadioMenuItemGroup group;
 	public static final long serialVersionUID = 42L; // I don't know what this is but I needed it apparently.
 
 	public RadioMenuItem()
 	{
-		this(null, new RadioMenuItemGroup(), false);
+		super();
 	}
-	public RadioMenuItem(String label)
+	public RadioMenuItem( String label )
 	{
-		this(label, new RadioMenuItemGroup(), false);
+		super( label );
 	}
-	public RadioMenuItem(String label, RadioMenuItemGroup group)
+	public RadioMenuItem( String label, RadioMenuItemGroup group )
 	{
-		this(label, group, false);
+		super( label );
+		setRadioMenuItemGroup( group );
 	}
-	public RadioMenuItem(String label, boolean state)
+	public RadioMenuItem( String label, boolean state )
 	{
-		this(label, new RadioMenuItemGroup(), state);
+		super( label, state );
 	}
-	public RadioMenuItem(String label, RadioMenuItemGroup group, boolean state)
+	public RadioMenuItem( String label, RadioMenuItemGroup group, boolean state )
 	{
-		super(label, state);
-		this.group = group;
-		this.group.addRadioMenuItem(this);
+		super( label, state );
+		setRadioMenuItemGroup( group );
 	}
 
 	public RadioMenuItemGroup getRadioMenuItemGroup()
@@ -46,9 +54,28 @@ public class RadioMenuItem extends CheckboxMenuItem
 		return group;
 	}
 
-	public void setRadioMenuItemGroup(RadioMenuItemGroup group)
+	public void setRadioMenuItemGroup( RadioMenuItemGroup group )
 	{
 		this.group = group;
-		group.addRadioMenuItem(this);
+		this.removeItemListener( listener );
+		if ( group != null )
+		{
+			// We need to make sure "this" is final so that we can refer to it
+			// in the scope below. Some compilers make you do this.
+			final RadioMenuItem me = this;
+			listener = new ItemListener()
+			{
+				@Override
+				public void itemStateChanged( ItemEvent e )
+				{
+					if ( e.getStateChange() == ItemEvent.SELECTED )
+					{
+						me.group.setSelectedRadioMenuItem( me );
+					}
+				}
+			};
+			this.addItemListener( listener );
+			group.addRadioMenuItem( this );
+		}
 	}
 }
