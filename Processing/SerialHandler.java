@@ -1,16 +1,17 @@
 import processing.serial.Serial;
 import processing.core.PApplet;
 
+// Singleton class
 public class SerialHandler
 {
 	// Time in between beacons (units: milliseconds)
-	private static final int BEACON_PERIOD = 500;
+	private static final int BEACON_PERIOD = Settings.getInstance().BEACON_PERIOD;
 
 	// Unique byte that the desktop program should recognize
-	private static final byte BEACON_KEY = 42;
+	private static final byte BEACON_KEY = Settings.getInstance().BEACON_KEY;
 
 	// Serial baud rate. Should match desktop program.
-	private int BAUD_RATE = 115200;
+	private int BAUD_RATE = Settings.getInstance().BAUD_RATE;
 
 	public static final byte NAME = 0;
 	public static final byte INDEX = 1;
@@ -20,46 +21,37 @@ public class SerialHandler
 	private PApplet applet;
 	private byte MODE;
 	private String name;
-	private int index;
+	private int index = 42;
 
-	public SerialHandler( PApplet applet )
+	private static SerialHandler firstInstance = null;
+
+	private SerialHandler()
 	{
 		MODE = AUTO;
-		this.applet = applet;
+		this.applet = new PApplet();
 		detectArduino();
+	}
 
-		if ( serial_port == null )
+	public static SerialHandler getInstance()
+	{
+		if ( firstInstance == null )
 		{
-			// If we've gotten this far, there are no more devices left
-			// TODO:- add a message saying maybe Arduino is Open
-			// TODO:- in the readme say to quit Arduino Studio
-			System.out.println( "We couldn't find the Arduino!\n"+
-								"Are you sure it's plugged in?\n"+
-								"Are any programs such as the Arduino IDE using it?\n"+
-								"If you still need help take a look at the following link:\n"+
-								"https://github.com/processing/processing/wiki/Serial-Issues" );
+			synchronized ( SerialHandler.class )
+			{
+				if ( firstInstance == null )
+				{
+					firstInstance = new SerialHandler();
+				}
+			}
 		}
-	}
 
-	public SerialHandler( PApplet applet, int index )
-	{
-		MODE = INDEX;
-		this.index = index;
-		this.applet = applet;
-		setSerial( index );
-	}
-
-	public SerialHandler( PApplet applet, String name )
-	{
-		MODE = NAME;
-		this.name = name;
-		this.applet = applet;
-		setSerial( name );
+		return firstInstance;
 	}
 
 	public void setBaudRate( int baud_rate )
 	{
 		this.BAUD_RATE = baud_rate;
+		Settings.getInstance().saveInt( "BAUD_RATE", baud_rate );
 		refresh();
 	}
 
@@ -88,6 +80,11 @@ public class SerialHandler
 	public Serial getSerial()
 	{
 		return serial_port;
+	}
+
+	public int r42()
+	{
+		return index;
 	}
 
 	public Serial getSerial( int index )
@@ -158,7 +155,21 @@ public class SerialHandler
 	        {
 	            System.out.println( "    Could not connect. Maybe it was busy.\n" );
 	        }
+			serial_port = null;
 	    }
+
+
+		if ( serial_port == null )
+		{
+			// If we've gotten this far, there are no more devices left
+			// TODO:- add a message saying maybe Arduino is Open
+			// TODO:- in the readme say to quit Arduino Studio
+			System.out.println( "We couldn't find the Arduino!\n"+
+								"Are you sure it's plugged in?\n"+
+								"Are any programs such as the Arduino IDE using it?\n"+
+								"If you still need help take a look at the following link:\n"+
+								"https://github.com/processing/processing/wiki/Serial-Issues" );
+		}
 	}
 
 	public void sendLEDs( byte[][] leds )

@@ -14,18 +14,31 @@ public class PluginHandler
     private Invocable invocable_engine;
     private BeatDetect beat;
     private FFT fft;
-    private int NUM_LEDS = 17; // TODO: User definabel
+    public String loaded_file;
 
     public PluginHandler(BeatDetect beat, FFT fft)
     {
         this.beat = beat;
         this.fft = fft;
 
-        // Initialize the leds array
-        leds = new byte[NUM_LEDS][3];
+        instantiateLEDs( Settings.getInstance().NUM_LEDS );
+    }
 
-        // Zero-out the array in case the plugin dev does something stupid
-        resetLeds();
+    public void instantiateLEDs( int num_leds )
+    {
+        if ( leds != null )
+        {
+            // Unload the script
+            unload();
+        }
+        // Initialize the leds array
+        leds = new byte[num_leds][3];
+
+        if ( loaded_file != null )
+        {
+            // Reload the script
+            load( loaded_file );
+        }
     }
 
     public boolean update()
@@ -54,11 +67,11 @@ public class PluginHandler
 
     public void resetLeds()
     {
-        for(int i = 0; i < NUM_LEDS; i++)
+        for(int i = 0; i < leds.length; i++)
         {
-            leds[i][0] = 0;
-            leds[i][1] = 0;
-            leds[i][2] = 0;
+            leds[i][0] = Settings.getInstance().RESTING_RED;
+            leds[i][1] = Settings.getInstance().RESTING_GREEN;
+            leds[i][2] = Settings.getInstance().RESTING_BLUE;
         }
     }
 
@@ -93,6 +106,8 @@ public class PluginHandler
 
         // cast the engine to an invocable object for use later
         invocable_engine = (Invocable) engine;
+
+        loaded_file = file_location;
     }
 
 }

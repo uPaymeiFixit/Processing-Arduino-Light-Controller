@@ -15,25 +15,22 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import javax.sound.sampled.Mixer;
+import javax.swing.JOptionPane;
 
 public class SystemTrayHandler
 {
 	// TODO: See Processing.pde for explanation
 	private static final boolean MIXER_BUG = false;
+	private static final boolean FEAT_CHIPSET = false;
 
 	private PluginHandler plugin;
 	private AudioInput in;
-	private SelectInput select_input;
 	private String plugins_directory;
 
-	public SystemTrayHandler(PluginHandler plugin,
-							 String working_directory,
-							 SelectInput select_input,
-							 AudioInput in)
+	public SystemTrayHandler(PluginHandler plugin, String working_directory, AudioInput in)
 	{
 		this.plugin = plugin;
 		this.in = in;
-		this.select_input = select_input;
 		this.plugins_directory = working_directory + "Plugins/";
 
 		if ( SystemTray.isSupported() )
@@ -47,7 +44,7 @@ public class SystemTrayHandler
 
 			popup.addSeparator();
 
-			if (!MIXER_BUG) addAudioMenu( popup );
+			if(!MIXER_BUG) addAudioMenu( popup );
 			addSettingsMenu( popup );
 
 			popup.addSeparator();
@@ -155,7 +152,6 @@ public class SystemTrayHandler
         }
 	}
 
-	// @Depreciated
 	void addAudioMenu( PopupMenu popup )
 	{
 		Menu audio_input_menu = new Menu( "Audio Input" );
@@ -163,9 +159,9 @@ public class SystemTrayHandler
 			addAudioInputs( audio_input_menu );
 	}
 
-	// @Depreciated
 	void addAudioInputs( Menu menu )
 	{
+		SelectInput select_input = SelectInput.getInstance();
 		RadioMenuItemGroup input_group = new RadioMenuItemGroup();
 		for (int i = 0; i < select_input.getInputs().length; i++)
 		{
@@ -184,10 +180,10 @@ public class SystemTrayHandler
 				{
 					if ( e.getStateChange() == ItemEvent.SELECTED )
 					{
-						System.out.println("Switching inputs to " +select_input.getInputs()[index].getName() );
-						select_input.refresh();
+						System.out.println("Switching inputs to " + SelectInput.getInstance().getInputs()[index].getName() );
+						SelectInput.getInstance().refresh();
 						in.close();
-						in = select_input.setInput( select_input.getInputs()[index] );
+						in = SelectInput.getInstance().setInput( SelectInput.getInstance().getInputs()[index] );
 					}
 				}
 			});
@@ -206,11 +202,22 @@ public class SystemTrayHandler
 	void addSettings( Menu menu )
 	{
 		MenuItem set_led_count = new MenuItem( "Set LED Count..." );
+		set_led_count.addActionListener( new ActionListener()
+		{
+			@Override
+			public void actionPerformed( ActionEvent e )
+			{
+				// TODO: Handle improper errors
+				int input = Integer.parseInt(JOptionPane.showInputDialog("You will need to change NUM_LEDS in Arduion.ion for this to work.", "Number of controllable LED segmetns"));
+				Settings.getInstance().saveInt( "NUM_LEDS", input );
+				plugin.instantiateLEDs( input );
+			}
+		});
 		menu.add( set_led_count );
 
 		Menu set_chipset = new Menu( "LED Chipset" );
-		menu.add( set_chipset );
-		addChipsets( set_chipset );
+		if(FEAT_CHIPSET) menu.add( set_chipset );
+		if(FEAT_CHIPSET) addChipsets( set_chipset );
 	}
 
 	void addChipsets( Menu menu )

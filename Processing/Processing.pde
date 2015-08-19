@@ -15,16 +15,10 @@ import processing.serial.Serial;
 // A user-workaround for this is to set the default input to whatever you want
 // it to be, start the program, and then change it back to whatever it was
 // before.
-static final boolean MIXER_BUG = false;
+private static final boolean MIXER_BUG = false;
 
 // Sets the GUI to show/not show
-static final boolean VISIBLE = false;
-
-// Size of the audio input buffer
-static final int BUFFER_SIZE = 2048;
-
-// Speed of draw() function (units: per second)
-static final int FRAME_RATE = 30;
+private static final boolean VISIBLE = Settings.getInstance().VISIBLE;
 
 
 // TODO: Check to see if Leonardo doesn't support this baud rate
@@ -34,29 +28,28 @@ Minim minim;          // Needs global for stop() and setup()
 AudioInput in;        // Needs global for stop() and setup()
 SerialHandler serial; // Needs global for draw() and setup()
 PluginHandler plugin; // Needs global for draw() and setup()
-SelectInput select_input;
 BeatDetect beat;
+
 void setup()
 {
     // Set up minim / audio input
     minim = new Minim( this );
-    /*SelectInput*/ select_input = MIXER_BUG ? null : new SelectInput( Minim.STEREO, BUFFER_SIZE );
-    if ( MIXER_BUG ) in = minim.getLineIn( Minim.STEREO, BUFFER_SIZE );
-    else in = select_input.setInput( "Soundflower (2ch)" );
+    if(!MIXER_BUG) in = SelectInput.getInstance().setInput( "Soundflower (2ch)" );
+    if (MIXER_BUG) in = minim.getLineIn( Minim.STEREO, Settings.getInstance().BUFFER_SIZE );
 
     // Set up BeatDetect
     /*BeatDetect*/ beat = new BeatDetect( in.bufferSize(), in.sampleRate() );
-    // new BeatListener( beat, in );
+    if (!MIXER_BUG) new BeatListener( beat, in );
 
     // Set up FFT
     FFT fft = new FFT( in.bufferSize(), in.sampleRate() );
     new FFTListener( fft, in );
 
     // Set up Serial
-    serial = new SerialHandler( this );
+    serial = SerialHandler.getInstance();
 
     // Set frame rate of draw()
-    frameRate( FRAME_RATE );
+    frameRate( Settings.getInstance().FRAME_RATE );
 
     // Import a custom pattern plugin
     plugin = new PluginHandler( beat, fft );
@@ -69,7 +62,7 @@ void setup()
     String working_directory = sketchPath("");
 
     // Load the system tray
-    new SystemTrayHandler( plugin, working_directory, select_input, in );
+    new SystemTrayHandler( plugin, working_directory, in );
 
     // TODO changeme
     plugin.load( working_directory+"Plugins/Kick Detect.js" );
@@ -81,7 +74,7 @@ void draw()
     if ( plugin.update() )
     {
         // TODO: Should this be here?
-        beat.detect(in.mix);
+        if(!MIXER_BUG) beat.detect(in.mix);
         // After that we will send the array to the Arduino
         // The format of the expected data is as follows:
         //    [red0, green0, blue0, red1, green1, blue1, (...), redn, greenn, bluen]
@@ -107,25 +100,11 @@ void keyPressed()
 {
   switch( key )
   {
-    case '1':
-      select_input.refresh();
-      System.out.println("\nREFRESHED");
-      break;
-
     case '2':
-      select_input.refresh();
+      SelectInput.getInstance().refresh();
       in.close();
-      in = select_input.setInput( "Soundflower (2ch)" );
+      in = SelectInput.getInstance().setInput( "Soundflower (2ch)" );
       System.out.println("\nREFRESHED AND RELOADED");
-      break;
-
-    case '3':
-      break;
-
-    case '4':
-      break;
-
-    case '5':
       break;
 
     default: break;

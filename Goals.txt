@@ -1,10 +1,10 @@
-NOT HAPPENING Get BeatDetect working
-NOT HAPPENING Get Audio Input selection working
+Get BeatDetect working
+Get Audio Input selection working
 	- Initially it will select the default input or maybe soundflower
 	- a listener scans beatdetect, if beatdetect hasn't fired enough times in
 		the past second. we need to close it and reselect it
 	- defaults will be loaded from a preferences file
-	
+
 Get LED count selection working
 Throw errors as popups
 Get chipset select working

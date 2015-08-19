@@ -3,6 +3,7 @@ import ddf.minim.Minim;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Mixer;
 
+// Singleton class
 // This class takes the same parameters as Minim's getLineIn method
 // and tries all of the inputs to see if they are usable.
 public class SelectInput
@@ -10,22 +11,36 @@ public class SelectInput
     private Minim minim;
     private Mixer mixer;
 
-    private int channel;
-    private int buffer_size;
+    private static final  int CHANNEL = Minim.STEREO;
+    private static final int BUFFER_SIZE = Settings.getInstance().BUFFER_SIZE;
 
     private Mixer.Info[] mixer_info;
     private Mixer.Info[] usable_inputs;
     private int usable_inputs_size;
 
-    public SelectInput( int channel, int buffer_size )
+    private static SelectInput firstInstance = null;
+
+    private SelectInput()
     {
-        this.channel = channel;
-        this.buffer_size = buffer_size;
-
         minim = new Minim( this );
-
         refresh();
     }
+
+    public static SelectInput getInstance()
+	{
+		if ( firstInstance == null )
+		{
+			synchronized ( SelectInput.class )
+			{
+				if ( firstInstance == null )
+				{
+					firstInstance = new SelectInput();
+				}
+			}
+		}
+
+		return firstInstance;
+	}
 
     public void refresh()
     {
@@ -39,7 +54,7 @@ public class SelectInput
             mixer = AudioSystem.getMixer( mixer_info[i] );
             minim.setInputMixer( mixer );
             // If it's null, we cannot use it
-            if ( minim.getLineIn( channel, buffer_size ) != null )
+            if ( minim.getLineIn( CHANNEL, BUFFER_SIZE ) != null )
             {
                 // Otherwise we can
                 usable_inputs_temp[usable_inputs_size++] = mixer_info[i];
@@ -71,7 +86,7 @@ public class SelectInput
     {
         mixer = AudioSystem.getMixer( mixer_info_element );
         minim.setInputMixer( mixer );
-        return minim.getLineIn( channel, buffer_size );
+        return minim.getLineIn( CHANNEL, BUFFER_SIZE );
     }
 
     // Returns an AudioInput based on the String name
