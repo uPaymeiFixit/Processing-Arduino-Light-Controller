@@ -15,35 +15,39 @@ public class SelectInput
 
     private Mixer.Info[] mixer_info;
     private Mixer.Info[] usable_inputs;
-    private int usable_inputs_size = 0;
+    private int usable_inputs_size;
 
-    public SelectInput(Minim minim, int channel, int buffer_size)
+    public SelectInput( int channel, int buffer_size )
     {
-        this.minim = minim;
         this.channel = channel;
         this.buffer_size = buffer_size;
 
-        AudioInput in;
+        minim = new Minim( this );
+
+        refresh();
+    }
+
+    public void refresh()
+    {
+        usable_inputs_size = 0;
         mixer_info = AudioSystem.getMixerInfo();
         Mixer.Info[] usable_inputs_temp = new Mixer.Info[mixer_info.length];
 
-        for(int i = 0; i < mixer_info.length; i++)
+        for( int i = mixer_info.length; i-- > 0; )
         {
-
             // Set the i-th input and try getting data from it.
-            mixer = AudioSystem.getMixer(mixer_info[i]);
-            minim.setInputMixer(mixer);
+            mixer = AudioSystem.getMixer( mixer_info[i] );
+            minim.setInputMixer( mixer );
             // If it's null, we cannot use it
-            if ( minim.getLineIn(channel, buffer_size) != null )
+            if ( minim.getLineIn( channel, buffer_size ) != null )
             {
                 // Otherwise we can
-                in = minim.getLineIn(channel, buffer_size);
                 usable_inputs_temp[usable_inputs_size++] = mixer_info[i];
             }
         }
 
         usable_inputs = new Mixer.Info[usable_inputs_size];
-        System.arraycopy(usable_inputs_temp, 0, usable_inputs, 0, usable_inputs_size);
+        System.arraycopy( usable_inputs_temp, 0, usable_inputs, 0, usable_inputs_size );
     }
 
     // Returns an array of the inputs that can actually have sound data
@@ -53,12 +57,46 @@ public class SelectInput
         return usable_inputs;
     }
 
-    // Returns an AudioInput device based on the input you selected from
-    //  the above method.
-    public AudioInput setInput(Mixer.Info mixer_info_element)
+    public String toString()
     {
-        mixer = AudioSystem.getMixer(mixer_info_element);
-        minim.setInputMixer(mixer);
-        return minim.getLineIn(channel, buffer_size);
+        String output = "[";
+		for ( int i = 0; i < usable_inputs.length; i++ )
+			output += usable_inputs[i].getName() + ", ";
+		return output.substring( 0, output.length() - 2 )+"]";
+
+    }
+
+    // Returns an AudioInput device based on the mixers
+    public AudioInput setInput( Mixer.Info mixer_info_element )
+    {
+        mixer = AudioSystem.getMixer( mixer_info_element );
+        minim.setInputMixer( mixer );
+        return minim.getLineIn( channel, buffer_size );
+    }
+
+    // Returns an AudioInput based on the String name
+    public AudioInput setInput( String name )
+    {
+        for ( int i = 0; i < usable_inputs.length; i++ )
+        {
+            if ( usable_inputs[i].getName().equals( name ) )
+            {
+                return setInput( usable_inputs[i] );
+            }
+        }
+
+        return setInput();
+    }
+
+    // Returns an AudioInput based on the specified index
+    public AudioInput setInput( int index )
+    {
+        return setInput( usable_inputs[index] );
+    }
+
+    // Returns the first (usually default) audio input
+    public AudioInput setInput()
+    {
+        return setInput(0);
     }
 }

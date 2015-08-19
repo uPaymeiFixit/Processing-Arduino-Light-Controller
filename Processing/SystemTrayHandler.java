@@ -18,6 +18,9 @@ import javax.sound.sampled.Mixer;
 
 public class SystemTrayHandler
 {
+	// TODO: See Processing.pde for explanation
+	private static final boolean MIXER_BUG = false;
+
 	private PluginHandler plugin;
 	private AudioInput in;
 	private SelectInput select_input;
@@ -40,38 +43,16 @@ public class SystemTrayHandler
 			final TrayIcon trayIcon = new TrayIcon( image, "Light Organ" );
 			final SystemTray tray = SystemTray.getSystemTray();
 
-			Menu plugins_menu = new Menu( "Plugins" );
-			popup.add( plugins_menu );
-				addPlugins( plugins_menu );
+			addPluginsMenu( popup );
 
 			popup.addSeparator();
 
-			Menu audio_input_menu = new Menu( "Audio Input" );
-			popup.add( audio_input_menu );
-				addAudioInputs( audio_input_menu );
-
-			Menu settings = new Menu( "Settings " );
-			popup.add( settings );
-				addSettings( settings );
+			if (!MIXER_BUG) addAudioMenu( popup );
+			addSettingsMenu( popup );
 
 			popup.addSeparator();
 
-			MenuItem exit = new MenuItem( "Exit" );
-			exit.addActionListener( new ActionListener()
-			{
-				@Override
-			    public void actionPerformed( ActionEvent e )
-			    {
-					// Exits the program
-					// plugin.resetLeds();
-					// TODO: Decide whether or not LEDS should turn off when
-					// program exits.
-					// 		Pros: You can set a color and then quit the program
-					// 		Cons: For LEDS to turn off, user has to unload plugins
-					System.exit(0);
-			    }
-			});
-			popup.add( exit );
+			addExitItem( popup );
 
 			trayIcon.setPopupMenu( popup );
 
@@ -86,6 +67,13 @@ public class SystemTrayHandler
 		{
 			System.out.println( "Tray is not supported" );
 		}
+	}
+
+	void addPluginsMenu( PopupMenu popup )
+	{
+		Menu plugins_menu = new Menu( "Plugins" );
+		popup.add( plugins_menu );
+			addPlugins( plugins_menu );
 	}
 
 	void addPlugins( Menu menu )
@@ -167,16 +155,23 @@ public class SystemTrayHandler
         }
 	}
 
+	// @Depreciated
+	void addAudioMenu( PopupMenu popup )
+	{
+		Menu audio_input_menu = new Menu( "Audio Input" );
+		popup.add( audio_input_menu );
+			addAudioInputs( audio_input_menu );
+	}
+
+	// @Depreciated
 	void addAudioInputs( Menu menu )
 	{
-		Mixer.Info[] m = select_input.getInputs();
 		RadioMenuItemGroup input_group = new RadioMenuItemGroup();
 		for (int i = 0; i < select_input.getInputs().length; i++)
 		{
 			boolean state = false;
 			if ( select_input.getInputs()[i].getName().equals( "Soundflower (2ch)" ) )
 			{
-				in = select_input.setInput(select_input.getInputs()[i]);
 				state = true;
 			}
 
@@ -189,6 +184,8 @@ public class SystemTrayHandler
 				{
 					if ( e.getStateChange() == ItemEvent.SELECTED )
 					{
+						System.out.println("Switching inputs to " +select_input.getInputs()[index].getName() );
+						select_input.refresh();
 						in.close();
 						in = select_input.setInput( select_input.getInputs()[index] );
 					}
@@ -197,6 +194,13 @@ public class SystemTrayHandler
 
 			menu.add( audio_option );
 		}
+	}
+
+	void addSettingsMenu( PopupMenu popup )
+	{
+		Menu settings = new Menu( "Settings " );
+		popup.add( settings );
+			addSettings( settings );
 	}
 
 	void addSettings( Menu menu )
@@ -222,6 +226,26 @@ public class SystemTrayHandler
 		menu.add( spi_WS2801 );
 		RadioMenuItem spi_TM1809 = new RadioMenuItem( "TM1809", chipset_group );
 		menu.add( spi_TM1809 );
+	}
+
+	void addExitItem( PopupMenu popup )
+	{
+		MenuItem exit = new MenuItem( "Exit" );
+		exit.addActionListener( new ActionListener()
+		{
+			@Override
+			public void actionPerformed( ActionEvent e )
+			{
+				// Exits the program
+				// plugin.resetLeds();
+				// TODO: Decide whether or not LEDS should turn off when
+				// program exits.
+				// 		Pros: You can set a color and then quit the program
+				// 		Cons: For LEDS to turn off, user has to unload plugins
+				System.exit(0);
+			}
+		});
+		popup.add( exit );
 	}
 
 }
