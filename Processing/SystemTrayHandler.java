@@ -287,8 +287,9 @@ public class SystemTrayHandler
 			public void actionPerformed( ActionEvent e )
 			{
 				String input = JOptionPane.showInputDialog(
-						"You will need to change BAUD_RATE in Arduion.ion for" +
-						" this to work.", "Serial baud rate" );
+						"You will need to change BAUD_RATE in Arduion.ino\n" +
+						"for this to work. The current baud rate is " +
+						Settings.getInstance().BAUD_RATE, "Serial baud rate" );
 				try
 				{
 					int number = Integer.parseInt( input );

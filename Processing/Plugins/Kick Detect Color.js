@@ -29,17 +29,13 @@
 
 // This example will pulse when a kick drum sound is detected from the
 // audio input. (Soundflower (2ch) by default) Each kick will be a random color.
-var brightness = 0;
 var hue = 0;
 function update()
 {
 	if ( BeatDetect.isKick() )
 	{
 		hue = Math.random();
-		brightness = 1;
 	}
-	else
-		brightness *= 0.65;
 
 	var rgb = HSVtoRGB(hue, 1, brightness);
 	for(var i = 0; i < leds.length; i++)
