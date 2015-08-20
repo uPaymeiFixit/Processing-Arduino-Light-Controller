@@ -9,70 +9,120 @@ import javax.script.ScriptException;
 
 public class PluginHandler
 {
-    public byte[][] leds;
+    // There is a lot of mixing bytes and ints because Processing 2.2.1 crashes
+    // when trying to convert ints from JavaScript to bytes in Java.
+    public int[][] leds;
     private Invocable invocable_engine;
     private BeatDetect beat;
     private FFT fft;
-    private String plugins_directory;
+    public String loaded_file;
 
-    public PluginHandler(String plugins_directory, BeatDetect beat, FFT fft)
+    public PluginHandler( BeatDetect beat, FFT fft )
     {
-        final int NUM_LEDS = 17; // TODO User definable
-
-        this.plugins_directory = plugins_directory;
         this.beat = beat;
         this.fft = fft;
 
-        // Initialize the leds array
-        leds = new byte[NUM_LEDS][3];
+        instantiateLEDs( Settings.getInstance().NUM_LEDS );
+    }
 
-        // Zero-out the array in case the plugin dev does something stupid
-        for(int i = 0; i < NUM_LEDS; i++)
+    public void instantiateLEDs( int num_leds )
+    {
+        if ( leds != null )
         {
-            leds[i][0] = 0;
-            leds[i][1] = 0;
-            leds[i][2] = 0;
+            // Unload the script
+            unload();
+        }
+
+        // Initialize the leds array
+        leds = new int[num_leds][3];
+
+        if ( loaded_file != null )
+        {
+            // Reload the script
+            load( loaded_file );
         }
     }
 
-    public void update()
+    public boolean update()
     {
         if ( invocable_engine != null )
         {
             try
             {
                 // invoke the global function named "update"
-                invocable_engine.invokeFunction("update");
+                invocable_engine.invokeFunction( "update" );
             }
-            catch (ScriptException e)       {e.printStackTrace();}
-            catch (NoSuchMethodException e) {e.printStackTrace();}
+            catch ( ScriptException e )
+            {
+                new Message( "It appears as though there may be an error in y" +
+                             "our script. Here is the stack trace:\n", e );
+                e.printStackTrace();
+            }
+            catch ( NoSuchMethodException e )
+            {
+                new Message( "We can't find the \"update()\" function in your" +
+                             "script. Are you sure it's there?", Message.ERROR );
+                e.printStackTrace();
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    public void resetLeds()
+    {
+        for ( int i = 0; i < leds.length; i++ )
+        {
+            leds[i][0] = Settings.getInstance().RESTING_RED;
+            leds[i][1] = Settings.getInstance().RESTING_GREEN;
+            leds[i][2] = Settings.getInstance().RESTING_BLUE;
         }
     }
 
-    public void load(String plugin_name)
+    public void unload()
+    {
+        invocable_engine = null;
+        resetLeds();
+    }
+
+    public void load( String file_location )
     {
         // create a script engine manager
         ScriptEngineManager factory = new ScriptEngineManager();
 
         // create a script engine
-        ScriptEngine engine = factory.getEngineByName("JavaScript");
+        ScriptEngine engine = factory.getEngineByName( "JavaScript" );
 
         // expose leds array, beat, and fft as variables to script to be used
-        engine.put("leds", leds);
-        engine.put("FFT", fft);
-        engine.put("BeatDetect", beat);
+        engine.put( "leds", leds );
+        engine.put( "FFT", fft );
+        engine.put( "BeatDetect", beat );
 
         try
         {
-            String file_location = plugins_directory + plugin_name + ".js";
             // evaluate JavaScript code from given file
-            engine.eval(new FileReader(file_location));
+            engine.eval( new FileReader( file_location ) );
         }
-        catch (ScriptException e)       {e.printStackTrace();}
-        catch (FileNotFoundException e) {e.printStackTrace();}
+        catch (ScriptException e)
+        {
+            new Message( "It appears as though there may be an error in y" +
+                         "our script. Here is the stack trace:\n", e );
+            e.printStackTrace();
+            return;
+        }
+        catch (FileNotFoundException e)
+        {
+            new Message( "We couldn't load the plugin! Are you sure the file " +
+                         " is still there?" );
+            e.printStackTrace();
+            return;
+        }
 
         // cast the engine to an invocable object for use later
         invocable_engine = (Invocable) engine;
+
+        loaded_file = file_location;
     }
 
 }

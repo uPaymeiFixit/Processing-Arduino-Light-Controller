@@ -2,125 +2,86 @@ import ddf.minim.AudioInput;
 import ddf.minim.Minim;
 import ddf.minim.analysis.BeatDetect;
 import ddf.minim.analysis.FFT;
-import javax.sound.sampled.Mixer;
+
+// This is needed because Processing throws a fit if it's not here.
 import processing.serial.Serial;
 
+// TODO: BUG:
+// When minim.setInputMixer() is called, it seems that the AudioInput only
+// generates buffers SOMETIMES. Generally, if it starts generating buffers at
+// the beginning, it will continue for the rest of the operation. But if it
+// doesn't, it's not going to randomly start. I've spent way too much time
+// on trying to fix this, so for now I'm removing this feature (ability to
+// select the input device.)
+// A user-workaround for this is to set the default input to whatever you want
+// it to be, start the program, and then change it back to whatever it was
+// before.
+private static final boolean MIXER_BUG = true;
+
 // Sets the GUI to show/not show
-static final boolean VISIBLE = false;
+// In order for this to work, we have to compile using Processing 2.2.1
+// newer versions seem to ignore this.
+private static final boolean VISIBLE = Settings.getInstance().VISIBLE;
 
-// Size of the audio input buffer
-static final int BUFFER_SIZE = 2048;
-
-// Speed of draw() function (units: per second)
-static final int FRAME_RATE = 30;
-
-// Time in between beacons
-static final int BEACON_PERIOD = 500;
-
-// Unique byte that the desktop program should recognize
-static final byte BEACON_KEY = 42;
-
-// Serial baud rate. Should match desktop program.
-static final int BAUD_RATE = 115200;
+// In order for there to be no dock icon in Mac, I had to add these lines to
+// /Applications/Processing.app/Contents/Java/modes/java/application/Info.plist.tmpl
+//      <key>LSUIElement</key>
+//          <true/>
 
 Minim minim;          // Needs global for stop() and setup()
 AudioInput in;        // Needs global for stop() and setup()
-Serial serial_port;   // Needs global for draw() and setup()
+SerialHandler serial; // Needs global for draw() and setup()
 PluginHandler plugin; // Needs global for draw() and setup()
 
 void setup()
 {
     // Set up minim / audio input
-    minim = new Minim(this);
-    in = autodetectInput();
+    minim = new Minim( this );
+    if(!MIXER_BUG) in = SelectInput.getInstance().setInput( "Soundflower (2ch)" );
+    if (MIXER_BUG) in = minim.getLineIn( Minim.STEREO,
+                                         Settings.getInstance().BUFFER_SIZE );
 
     // Set up BeatDetect
-    BeatDetect beat = new BeatDetect(in.bufferSize(), in.sampleRate());
-    new BeatListener(beat, in);
+    BeatDetect beat = new BeatDetect( in.bufferSize(), in.sampleRate() );
+    new BeatListener( beat, in );
 
     // Set up FFT
-    FFT fft = new FFT(in.bufferSize(), in.sampleRate());
-    new FFTListener(fft, in);
+    FFT fft = new FFT( in.bufferSize(), in.sampleRate() );
+    new FFTListener( fft, in );
 
-    // Set up Serial
-    serial_port = autodetectSerial();
-
-    // Set frame rate of draw()
-    frameRate(FRAME_RATE);
+    // Import a custom pattern plugin
+    plugin = new PluginHandler( beat, fft );
 
     // In Java this is the code we would use for the working_directory, but
     // in Processing this does not work
     //   String working_directory = MyClassName.class.getResource("").getPath();
     // So we have to use this instead:
-    String sketch_location = sketchPath("")+"Plugins/"; // TODO - This folder isn't here when you export the program.
+    // TODO: This folder isn't here when you export the program.
+    String working_directory = sketchPath("");
 
-    String plugin_name = "Rainbow";
+    // Load the system tray
+    new SystemTrayHandler( plugin, working_directory, in );
 
-    // Import a custom pattern plugin
-    plugin = new PluginHandler(sketch_location, beat, fft);
-    plugin.load(plugin_name);
-}
+    // Set up Serial
+    serial = SerialHandler.getInstance();
 
-// Trys to find and set the Soundflower (2ch) input
-AudioInput autodetectInput()
-{
-    SelectInput si = new SelectInput(Minim.STEREO, BUFFER_SIZE);
-    Mixer.Info[] m = si.getInputs();
+    // Set frame rate of draw()
+    frameRate( Settings.getInstance().FRAME_RATE );
 
-    // First we will set a default index, in case we don't find it.
-    int current_input = 0;
-
-    // Next we will search for the input with the matching name.
-    for (int i = 0; i < si.getInputs().length; i++)
-        if(si.getInputs()[i].getName().equals("Soundflower (2ch)"))
-            current_input = i;
-
-    // Now we set the input. If soundflower was found it should be set.
-    return si.setInput(si.getInputs()[current_input]);
-}
-
-// Finds the correct serial device to connect to
-Serial autodetectSerial()
-{
-    // Run through each Serial device
-    for(int i = 0; i < Serial.list().length; i++)
-    {
-        boolean passed = true;
-        try
-        {
-            serial_port = new Serial(this, Serial.list()[i], BAUD_RATE);
-        }
-        catch (Exception e)
-        {
-            passed = false;
-        }
-        // If we were able to establish a connection without exception...
-        if(passed)
-        {
-            // We will wait for the device to send us information
-            delay(BEACON_PERIOD+1);
-            // If the device sends us a matching byte, we found it
-            if (serial_port.read() == BEACON_KEY)
-                return serial_port;
-        }
-    }
-    // If we've gotten this far, there are no more devices left
-    return null;
 }
 
 void draw()
 {
     // We will let the plugin update the leds array
-    plugin.update();
-
-    // After that we will send the array to the Arduino
-    // The format of the expected data is as follows:
-    //    [red0, green0, blue0, red1, green1, blue1, (...), redn, greenn, bluen]
-    for(int i = 0; i < plugin.leds.length; i++)
+    if ( plugin.update() )
     {
-        serial_port.write(plugin.leds[i][0]);
-        serial_port.write(plugin.leds[i][1]);
-        serial_port.write(plugin.leds[i][2]);
+        // TODO: Should this be here?
+        // beat.detect(in.mix);
+
+        // After that we will send the array to the Arduino
+        // The format of the expected data is as follows:
+        //[red0, green0, blue0, red1, green1, blue1, (...), redN, greenN, blueN]
+        serial.sendLEDs( plugin.leds );
     }
 }
 
@@ -129,10 +90,26 @@ public void stop() {
     in.close();
     minim.stop();
     // Close serial port so others can use it
-    serial_port.stop();
+    serial.stop();
     super.stop();
 }
 
 boolean displayable() {
     return VISIBLE;
+}
+
+// For debug stuff only.
+void keyPressed()
+{
+  switch( key )
+  {
+    case '2':
+      SelectInput.getInstance().refresh();
+      in.close();
+      in = SelectInput.getInstance().setInput( "Soundflower (2ch)" );
+      System.out.println("\nREFRESHED AND RELOADED");
+      break;
+
+    default: break;
+  }
 }
