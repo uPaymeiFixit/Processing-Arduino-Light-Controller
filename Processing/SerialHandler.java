@@ -1,5 +1,5 @@
-import processing.serial.Serial;
 import processing.core.PApplet;
+import processing.serial.Serial;
 
 // Singleton class
 public class SerialHandler
@@ -21,9 +21,8 @@ public class SerialHandler
 	private PApplet applet;
 	private byte MODE;
 	private String name;
-	private int index = 42;
+	private int index;
 
-	private static SerialHandler firstInstance = null;
 
 	private SerialHandler()
 	{
@@ -32,6 +31,7 @@ public class SerialHandler
 		detectArduino();
 	}
 
+	private static SerialHandler firstInstance = null;
 	public static SerialHandler getInstance()
 	{
 		if ( firstInstance == null )
@@ -82,11 +82,6 @@ public class SerialHandler
 		return serial_port;
 	}
 
-	public int r42()
-	{
-		return index;
-	}
-
 	public Serial getSerial( int index )
 	{
 		return new Serial( applet, Serial.list()[index], BAUD_RATE );
@@ -121,17 +116,19 @@ public class SerialHandler
 		MODE = AUTO;
 		// Close the serial port before we change it.
 		stop();
+		Serial serial = null;
 
 	    // Run through each Serial device
-	    for(int i = 0; i < Serial.list().length; i++)
+	    for (int i = 0; i < Serial.list().length; i++)
 	    {
 	        try
 	        {
 	            System.out.println( "Trying serial port " + Serial.list()[i] );
 				// This throws the exceptin if it can't run
-	            serial_port = new Serial( applet, Serial.list()[i], BAUD_RATE );
+	            serial = new Serial( applet, Serial.list()[i], BAUD_RATE );
 
-	            System.out.println( "    Connected.\n    Listening for Arduino beacon..." );
+	            System.out.println( "    Connected.\n    Listening for Arduin" +
+				 					"o beacon..." );
 	            // We will wait for the device to send us information
 				try
 				{
@@ -143,43 +140,50 @@ public class SerialHandler
 				    Thread.currentThread().interrupt();
 				}
 	            // If the device sends us a matching byte, we found it
-	            if ( serial_port.read() == BEACON_KEY )
+	            if ( serial.read() == BEACON_KEY )
 	            {
-	                System.out.println( "    \nArduino found on " + Serial.list()[i] + '\n' );
+	                System.out.println( "    \nArduino found on " +
+										Serial.list()[i] + '\n' );
 	                break;
 	            }
 	            System.out.println( "    We didn't receive the Arduino beacon.\n" );
-				serial_port.stop();
+				serial.stop();
 	        }
 	        catch ( RuntimeException e )
 	        {
 	            System.out.println( "    Could not connect. Maybe it was busy.\n" );
 	        }
-			serial_port = null;
+			serial = null;
 	    }
 
+		serial_port = serial;
 
 		if ( serial_port == null )
 		{
 			// If we've gotten this far, there are no more devices left
 			// TODO:- add a message saying maybe Arduino is Open
 			// TODO:- in the readme say to quit Arduino Studio
-			System.out.println( "We couldn't find the Arduino!\n"+
-								"Are you sure it's plugged in?\n"+
-								"Are any programs such as the Arduino IDE using it?\n"+
-								"If you still need help take a look at the following link:\n"+
-								"https://github.com/processing/processing/wiki/Serial-Issues" );
+			new Message( "We couldn't find the Arduino!\nAre you sure it's pl" +
+						 "ugged in?\nAre any programs such as the Arduino IDE" +
+						 " using it?\nMaybe try changing the baud rate. \n If" +
+						 "you still need help take a look at the following li" +
+						 "nk:\nhttps://github.com/processing/processing/wiki/" +
+						 "Serial-Issues", Message.ERROR );
 		}
 	}
 
-	public void sendLEDs( byte[][] leds )
+	public void sendLEDs( int[][] leds )
 	{
-		for ( int i = 0; i < leds.length; i++ )
-        {
-            serial_port.write( leds[i][0] );
-            serial_port.write( leds[i][1] );
-            serial_port.write( leds[i][2] );
-        }
+		// This happens when we are setting the baud rate
+		if ( serial_port != null )
+		{
+			for ( int i = 0; i < leds.length; i++ )
+	        {
+	            serial_port.write( leds[i][0] );
+	            serial_port.write( leds[i][1] );
+	            serial_port.write( leds[i][2] );
+	        }
+		}
 	}
 
 	public String toString()
@@ -198,6 +202,7 @@ public class SerialHandler
 		if ( serial_port != null )
 		{
 			serial_port.stop();
+			serial_port = null;
 		}
 	}
 }

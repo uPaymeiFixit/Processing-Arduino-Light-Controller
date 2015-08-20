@@ -14,13 +14,13 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
-import javax.sound.sampled.Mixer;
+import java.lang.NumberFormatException;
 import javax.swing.JOptionPane;
 
 public class SystemTrayHandler
 {
 	// TODO: See Processing.pde for explanation
-	private static final boolean MIXER_BUG = false;
+	private static final boolean MIXER_BUG = true;
 	private static final boolean FEAT_CHIPSET = false;
 
 	private PluginHandler plugin;
@@ -33,11 +33,33 @@ public class SystemTrayHandler
 		this.in = in;
 		this.plugins_directory = working_directory + "Plugins/";
 
+		// Okay, this one was stupid hacky. I couldn't figure out how to export
+		// images with processing, but I noticed that in
+		// Processing.app/Contents/Java/ there was a file named jssc.txt.
+		// I'm almost 100% certain that Processing isn't using this. So I found
+		// the file in /Applications/Processing.app/Contents/Java/modes/java/libraries/serial/library/jssc.txt
+		// I took my icon.gif and renamed it to jssc.txt, and it appears to work.
+		String icon = SystemTrayHandler.class.getResource("").getPath() + "jssc.txt";
+
 		if ( SystemTray.isSupported() )
 		{
+			if ( !( new File( icon ) ).exists() )
+			{
+				String local_icon = working_directory + "icon.gif";
+				if ( !( new File( local_icon ) ).exists() )
+				{
+					new Message( "Could not find icon.gif to put in the Syste" +
+					 			 "Tray. We looked in " + icon + " and " +
+								 local_icon, Message.ERROR );
+					System.exit(1);
+				}
+				icon = local_icon;
+			}
+
 			final PopupMenu popup = new PopupMenu();
-			final Image image = Toolkit.getDefaultToolkit().getImage( working_directory + "icon.gif" );
-			final TrayIcon trayIcon = new TrayIcon( image, "Light Organ" );
+			final Image image = Toolkit.getDefaultToolkit()
+									.getImage( icon );
+			final TrayIcon trayIcon = new TrayIcon( image, "Light Controller" );
 			final SystemTray tray = SystemTray.getSystemTray();
 
 			addPluginsMenu( popup );
@@ -57,12 +79,22 @@ public class SystemTrayHandler
 			{
 				tray.add( trayIcon );
 			}
-			catch ( AWTException e ) { e.printStackTrace(); }
+			catch ( AWTException e )
+			{
+				new Message( "There was a problem creating an icon on the sys" +
+							 "tem tray. This program will now exit.",
+							 Message.ERROR );
+				e.printStackTrace();
+				System.exit(1);
+			}
 
 		}
 		else
 		{
+			new Message( "Light Controller is not suppored on this machine du" +
+			 			 "e to system tray being unsupported.", Message.ERROR );
 			System.out.println( "Tray is not supported" );
+			System.exit(1);
 		}
 	}
 
@@ -83,10 +115,18 @@ public class SystemTrayHandler
 			{
 				try
 				{
-				// Open the Plugins folder
-				Desktop.getDesktop().open( new File( plugins_directory ) );
+					// Open the Plugins folder
+					Desktop.getDesktop().open(
+							new File( Settings.getInstance().PLUGINS_PATH ) );
 				}
-				catch ( IOException e ) { e.printStackTrace(); }
+				catch ( IOException e )
+				{
+					new Message( "Could not automatically open the plugins fo" +
+								 "lder. Are you sure it exists? It should be " +
+								 "at Documents/Light_Controller/Plugins/",
+								 Message.WARNING );
+					e.printStackTrace();
+				}
 			}
 		});
 		menu.add( open_plugins_folder );
@@ -97,7 +137,8 @@ public class SystemTrayHandler
 		RadioMenuItemGroup plugin_group = new RadioMenuItemGroup();
 
 		// Recursively search for and add plugins
-		searchForPlugins( menu, new File( plugins_directory ), plugin_group );
+		searchForPlugins( menu,
+				new File( Settings.getInstance().PLUGINS_PATH ), plugin_group );
 	}
 
 	// Recursively searches for files and directorys and places them in the menu
@@ -133,7 +174,8 @@ public class SystemTrayHandler
 								// different method. Throws errors and stuff.
 								plugin.load( file_location );
 							}
-							else if ( radio.getRadioMenuItemGroup().getSelectedRadioMenuItem() == null )
+							else if ( radio.getRadioMenuItemGroup()
+											.getSelectedRadioMenuItem() == null )
 							{
 								plugin.unload();
 							}
@@ -163,7 +205,7 @@ public class SystemTrayHandler
 	{
 		SelectInput select_input = SelectInput.getInstance();
 		RadioMenuItemGroup input_group = new RadioMenuItemGroup();
-		for (int i = 0; i < select_input.getInputs().length; i++)
+		for ( int i = 0; i < select_input.getInputs().length; i++ )
 		{
 			boolean state = false;
 			if ( select_input.getInputs()[i].getName().equals( "Soundflower (2ch)" ) )
@@ -172,7 +214,8 @@ public class SystemTrayHandler
 			}
 
 			final int index = i;
-			RadioMenuItem audio_option = new RadioMenuItem( select_input.getInputs()[i].getName(), input_group, state );
+			RadioMenuItem audio_option = new RadioMenuItem(
+					select_input.getInputs()[i].getName(), input_group, state );
 			audio_option.addItemListener( new ItemListener()
 			{
 				@Override
@@ -180,10 +223,13 @@ public class SystemTrayHandler
 				{
 					if ( e.getStateChange() == ItemEvent.SELECTED )
 					{
-						System.out.println("Switching inputs to " + SelectInput.getInstance().getInputs()[index].getName() );
+						new Message( "Switching inputs to " + SelectInput
+									 .getInstance().getInputs()[index].getName() +
+									 "\nThis is an experimental feature." );
 						SelectInput.getInstance().refresh();
 						in.close();
-						in = SelectInput.getInstance().setInput( SelectInput.getInstance().getInputs()[index] );
+						in = SelectInput.getInstance().setInput(
+								SelectInput.getInstance().getInputs()[index] );
 					}
 				}
 			});
@@ -207,10 +253,25 @@ public class SystemTrayHandler
 			@Override
 			public void actionPerformed( ActionEvent e )
 			{
-				// TODO: Handle improper errors
-				int input = Integer.parseInt(JOptionPane.showInputDialog("You will need to change NUM_LEDS in Arduion.ion for this to work.", "Number of controllable LED segmetns"));
-				Settings.getInstance().saveInt( "NUM_LEDS", input );
-				plugin.instantiateLEDs( input );
+				String input = JOptionPane.showInputDialog(
+						"You will need to change NUM_LEDS in Arduion.ion for " +
+						"this to work.", "Number of controllable LED segmetns" );
+				try
+				{
+					int number = Integer.parseInt( input );
+					if ( number < 1 )
+					{
+						throw new NumberFormatException();
+					}
+
+					Settings.getInstance().saveInt( "NUM_LEDS", number );
+					plugin.instantiateLEDs( number );
+				}
+				catch ( NumberFormatException e2 )
+				{
+					new Message( "You must enter an integer which is above 0",
+								 Message.WARNING );
+				}
 			}
 		});
 		menu.add( set_led_count );
@@ -218,8 +279,38 @@ public class SystemTrayHandler
 		Menu set_chipset = new Menu( "LED Chipset" );
 		if(FEAT_CHIPSET) menu.add( set_chipset );
 		if(FEAT_CHIPSET) addChipsets( set_chipset );
+
+		MenuItem set_baud = new MenuItem( "Set Baud Rate..." );
+		set_baud.addActionListener( new ActionListener()
+		{
+			@Override
+			public void actionPerformed( ActionEvent e )
+			{
+				String input = JOptionPane.showInputDialog(
+						"You will need to change BAUD_RATE in Arduion.ion for" +
+						" this to work.", "Serial baud rate" );
+				try
+				{
+					int number = Integer.parseInt( input );
+					if ( number < 1 )
+					{
+						throw new NumberFormatException();
+					}
+
+					Settings.getInstance().saveInt( "BAUD_RATE", number );
+					SerialHandler.getInstance().setBaudRate( number );
+				}
+				catch ( NumberFormatException e2 )
+				{
+					new Message( "You must enter an integer which is above 0",
+								 Message.WARNING );
+				}
+			}
+		});
+		menu.add( set_baud );
 	}
 
+	// TODO: Make chipsets work
 	void addChipsets( Menu menu )
 	{
 		RadioMenuItemGroup chipset_group = new RadioMenuItemGroup();

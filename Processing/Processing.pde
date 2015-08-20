@@ -2,7 +2,8 @@ import ddf.minim.AudioInput;
 import ddf.minim.Minim;
 import ddf.minim.analysis.BeatDetect;
 import ddf.minim.analysis.FFT;
-import javax.sound.sampled.Mixer;
+
+// This is needed because Processing throws a fit if it's not here.
 import processing.serial.Serial;
 
 // TODO: BUG:
@@ -15,41 +16,38 @@ import processing.serial.Serial;
 // A user-workaround for this is to set the default input to whatever you want
 // it to be, start the program, and then change it back to whatever it was
 // before.
-private static final boolean MIXER_BUG = false;
+private static final boolean MIXER_BUG = true;
 
 // Sets the GUI to show/not show
+// In order for this to work, we have to compile using Processing 2.2.1
+// newer versions seem to ignore this.
 private static final boolean VISIBLE = Settings.getInstance().VISIBLE;
 
-
-// TODO: Check to see if Leonardo doesn't support this baud rate
-// TODO: maybe add a setting to set the baud rate OR arduino board
+// In order for there to be no dock icon in Mac, I had to add these lines to
+// /Applications/Processing.app/Contents/Java/modes/java/application/Info.plist.tmpl
+//      <key>LSUIElement</key>
+//          <true/>
 
 Minim minim;          // Needs global for stop() and setup()
 AudioInput in;        // Needs global for stop() and setup()
 SerialHandler serial; // Needs global for draw() and setup()
 PluginHandler plugin; // Needs global for draw() and setup()
-BeatDetect beat;
 
 void setup()
 {
     // Set up minim / audio input
     minim = new Minim( this );
     if(!MIXER_BUG) in = SelectInput.getInstance().setInput( "Soundflower (2ch)" );
-    if (MIXER_BUG) in = minim.getLineIn( Minim.STEREO, Settings.getInstance().BUFFER_SIZE );
+    if (MIXER_BUG) in = minim.getLineIn( Minim.STEREO,
+                                         Settings.getInstance().BUFFER_SIZE );
 
     // Set up BeatDetect
-    /*BeatDetect*/ beat = new BeatDetect( in.bufferSize(), in.sampleRate() );
-    if (!MIXER_BUG) new BeatListener( beat, in );
+    BeatDetect beat = new BeatDetect( in.bufferSize(), in.sampleRate() );
+    new BeatListener( beat, in );
 
     // Set up FFT
     FFT fft = new FFT( in.bufferSize(), in.sampleRate() );
     new FFTListener( fft, in );
-
-    // Set up Serial
-    serial = SerialHandler.getInstance();
-
-    // Set frame rate of draw()
-    frameRate( Settings.getInstance().FRAME_RATE );
 
     // Import a custom pattern plugin
     plugin = new PluginHandler( beat, fft );
@@ -64,8 +62,12 @@ void setup()
     // Load the system tray
     new SystemTrayHandler( plugin, working_directory, in );
 
-    // TODO changeme
-    plugin.load( working_directory+"Plugins/Kick Detect.js" );
+    // Set up Serial
+    serial = SerialHandler.getInstance();
+
+    // Set frame rate of draw()
+    frameRate( Settings.getInstance().FRAME_RATE );
+
 }
 
 void draw()
@@ -74,16 +76,16 @@ void draw()
     if ( plugin.update() )
     {
         // TODO: Should this be here?
-        if(!MIXER_BUG) beat.detect(in.mix);
+        // beat.detect(in.mix);
+
         // After that we will send the array to the Arduino
         // The format of the expected data is as follows:
-        //    [red0, green0, blue0, red1, green1, blue1, (...), redn, greenn, bluen]
+        //[red0, green0, blue0, red1, green1, blue1, (...), redN, greenN, blueN]
         serial.sendLEDs( plugin.leds );
     }
 }
 
 public void stop() {
-    System.out.println("The system is halting!"); // This never gets printed
     // always close Minim audio classes when you are done with them
     in.close();
     minim.stop();
@@ -96,6 +98,7 @@ boolean displayable() {
     return VISIBLE;
 }
 
+// For debug stuff only.
 void keyPressed()
 {
   switch( key )

@@ -18,14 +18,13 @@ public class SelectInput
     private Mixer.Info[] usable_inputs;
     private int usable_inputs_size;
 
-    private static SelectInput firstInstance = null;
-
     private SelectInput()
     {
         minim = new Minim( this );
         refresh();
     }
 
+    private static SelectInput firstInstance = null;
     public static SelectInput getInstance()
 	{
 		if ( firstInstance == null )
@@ -38,7 +37,6 @@ public class SelectInput
 				}
 			}
 		}
-
 		return firstInstance;
 	}
 
@@ -78,7 +76,6 @@ public class SelectInput
 		for ( int i = 0; i < usable_inputs.length; i++ )
 			output += usable_inputs[i].getName() + ", ";
 		return output.substring( 0, output.length() - 2 )+"]";
-
     }
 
     // Returns an AudioInput device based on the mixers
@@ -90,6 +87,7 @@ public class SelectInput
     }
 
     // Returns an AudioInput based on the String name
+    // If none of that name are found, the default will be returned
     public AudioInput setInput( String name )
     {
         for ( int i = 0; i < usable_inputs.length; i++ )
@@ -99,7 +97,6 @@ public class SelectInput
                 return setInput( usable_inputs[i] );
             }
         }
-
         return setInput();
     }
 

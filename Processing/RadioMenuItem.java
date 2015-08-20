@@ -11,11 +11,6 @@
  * @since 2015-08-17
  */
 
-
- // When items are created without the group param
- // they create their own group and attach an item listener to themeselves
- // hten later if you assign them to another gourp they have another listener
-
 import java.awt.CheckboxMenuItem;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -24,7 +19,9 @@ public class RadioMenuItem extends CheckboxMenuItem
 {
 	private ItemListener listener;
 	private RadioMenuItemGroup group;
-	public static final long serialVersionUID = 42L; // I don't know what this is but I needed it apparently.
+
+	 // I don't know what this is but I needed it apparently.
+	public static final long serialVersionUID = 42L;
 
 	public RadioMenuItem()
 	{

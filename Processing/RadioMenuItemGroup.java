@@ -19,12 +19,12 @@ public class RadioMenuItemGroup
 	// Default methods from java.awt.CheckboxGroup
 	public RadioMenuItemGroup()
 	{
-		radios = new ArrayList<>();
+		radios = new ArrayList<RadioMenuItem>();
 	}
 
-	// Gets the current choice from this radio menu item group. The current choice
-	// is the radio menu item in this group that is currently in the "on" state, or
-	// null if all radio menu itemes in the group are off.
+	// Gets the current choice from this radio menu item group. The current
+	// choice is the radio menu item in this group that is currently in the "on"
+	// state, or null if all radio menu itemes in the group are off.
 	public RadioMenuItem getSelectedRadioMenuItem()
 	{
 		for ( RadioMenuItem radio : radios )
@@ -33,12 +33,12 @@ public class RadioMenuItemGroup
 		return null;
 	}
 
-	// Sets the currently selected radio menu item in this group to be the specified
-	// radio menu item. This method sets the state of that radio menu item to "on" and sets
-	// all other radio menu itemes in the group to be off.
-	// If the radio menu item argument is null, all radio menu itemes in this radio menu item
-	// group are deselected. If the radio menu item argument belongs to a different
-	// radio menu item group, this method does nothing.
+	// Sets the currently selected radio menu item in this group to be the
+	// specified radio menu item. This method sets the state of that radio menu
+	// item to "on" and sets all other radio menu itemes in the group to be off.
+	// If the radio menu item argument is null, all radio menu itemes in this
+	// radio menu item group are deselected. If the radio menu item argument
+	// belongs to a different radio menu item group, this method does nothing.
 	public void setSelectedRadioMenuItem( RadioMenuItem radio )
 	{
 		// If the user gave us a random RadioMenuItem not in this group, add it
@@ -53,8 +53,8 @@ public class RadioMenuItemGroup
 		radio.setState( true );
 	}
 
-	// Returns a string representation of this radio menu item group, including the
-	// value of its current selection.
+	// Returns a string representation of this radio menu item group, including
+	// the value of its current selection.
 	public String toString()
 	{
 		// I don't know exactly how CheckboxGroup's toString works
