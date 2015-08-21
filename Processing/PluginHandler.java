@@ -88,6 +88,9 @@ public class PluginHandler
 
     public void load( String file_location )
     {
+        // This keeps previous scripts from interfering
+        unload();
+
         // create a script engine manager
         ScriptEngineManager factory = new ScriptEngineManager();
 
