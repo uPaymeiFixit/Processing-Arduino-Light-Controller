@@ -49,7 +49,7 @@ public class SystemTrayHandler
 				if ( !( new File( local_icon ) ).exists() )
 				{
 					new Message( "Could not find icon.gif to put in the Syste" +
-					 			 "Tray. We looked in\n" + icon + "\nand\n" +
+					 			 "m Tray. We looked in\n" + icon + "\nand\n" +
 								 local_icon, Message.ERROR );
 					System.exit(1);
 				}
@@ -82,7 +82,7 @@ public class SystemTrayHandler
 			catch ( AWTException e )
 			{
 				new Message( "There was a problem creating an icon on the sys" +
-							 "tem tray. This program will now exit.",
+							 "tem tray.\nThis program will now exit.",
 							 Message.ERROR );
 				e.printStackTrace();
 				System.exit(1);
