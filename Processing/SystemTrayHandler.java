@@ -49,7 +49,7 @@ public class SystemTrayHandler
 				if ( !( new File( local_icon ) ).exists() )
 				{
 					new Message( "Could not find icon.gif to put in the Syste" +
-					 			 "Tray. We looked in " + icon + " and " +
+					 			 "Tray. We looked in\n" + icon + "\nand\n" +
 								 local_icon, Message.ERROR );
 					System.exit(1);
 				}
