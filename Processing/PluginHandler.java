@@ -78,6 +78,10 @@ public class PluginHandler
             leds[i][1] = Settings.getInstance().RESTING_GREEN;
             leds[i][2] = Settings.getInstance().RESTING_BLUE;
         }
+
+        // the main update loop won't send this since this class's update method
+        // returs false, so we have to manually send the black leds.
+        SerialHandler.getInstance().sendLEDs( leds );
     }
 
     public void unload()
