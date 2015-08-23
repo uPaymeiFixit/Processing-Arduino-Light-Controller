@@ -5,48 +5,48 @@ import javax.swing.JFileChooser;
 // Singleton class: We don't need this more than once
 public class Settings
 {
-	private String PACKAGE_NAME = "tk.gibbs.ColorOrgan";
-	private Preferences prefs;
+	private static String PACKAGE_NAME = "tk.gibbs.ColorOrgan";
+	private static Preferences prefs;
 
 
 	// These preferences can be found in
 	// ~/Library/Preferences/com.apple.java.util.prefs.plist
 
 	// Sets the GUI to show/not show
-	public boolean VISIBLE = false;
+	public static boolean VISIBLE = false;
 
 	// Size of the audio input buffer
-	public int BUFFER_SIZE = 2048;
+	public static int BUFFER_SIZE = 2048;
 
 	// Speed of draw() function (units: per second)
-	public int FRAME_RATE = 30;
+	public static int FRAME_RATE = 30;
 
 	// Serial baud rate. Should match desktop program.
-	public int BAUD_RATE = 115200;
+	public static int BAUD_RATE = 115200;
 
 	// Number of controllable LED segments on the strip (note, this needs to
 	// match NUM_LEDS in Arduino.ino);
-	public int NUM_LEDS = 17;
-
-	// Default colors for when the script starts up or scripts are unloaded
-	public byte RESTING_RED = 0;
-	public byte RESTING_GREEN = 0;
-	public byte RESTING_BLUE = 0;
+	public static int NUM_LEDS = 17;
 
 	// Time in between beacons (units: milliseconds)
-	public int BEACON_PERIOD = 500;
+	public static int BEACON_PERIOD = 500;
 
 	// Unique byte that the desktop program should recognize
-	public byte BEACON_KEY = 42;
+	public static byte BEACON_KEY = 42;
 
 	// Default path for the plugins (Documens/Light_Controller/Plugins)
-	public String PLUGINS_PATH = "";
+	public static String PLUGINS_PATH = "";
+
+	public static String LAST_PLUGIN = "";
 
 
 	// Created to keep users from instantiation
 	// Only Settings will be able to instantiate this class
 	private Settings()
 	{
+
+		// TODO: add settings.updateBaudRate() etc and then remove anything that
+		// matches "= Settings.*";
 		// This will define a node in which the preferences can be stored
 		prefs = Preferences.userRoot().node( PACKAGE_NAME );
 
@@ -60,12 +60,6 @@ public class Settings
 		prefs.putInt( "BAUD_RATE", BAUD_RATE );
 		NUM_LEDS = prefs.getInt( "NUM_LEDS", NUM_LEDS );
 		prefs.putInt( "NUM_LEDS", NUM_LEDS );
-		RESTING_RED = (byte) prefs.getInt( "RESTING_RED", RESTING_RED );
-		prefs.putInt( "RESTING_RED", RESTING_RED );
-		RESTING_GREEN = (byte) prefs.getInt( "RESTING_GREEN", RESTING_GREEN );
-		prefs.putInt( "RESTING_GREEN", RESTING_GREEN );
-		RESTING_BLUE = (byte) prefs.getInt( "RESTING_BLUE ", RESTING_BLUE );
-		prefs.putInt( "RESTING_BLUE ", RESTING_BLUE );
 		BEACON_PERIOD = prefs.getInt( "BEACON_PERIOD", BEACON_PERIOD );
 		prefs.putInt( "BEACON_PERIOD", BEACON_PERIOD );
 		BEACON_KEY = (byte) prefs.getInt( "BEACON_KEY", BEACON_KEY );
@@ -82,8 +76,11 @@ public class Settings
 		// If the plugins path is not set, this is a first run
 		if ( PLUGINS_PATH.equals("") )
 		{
-			System.out.println( "This is the first time this program has run." +
-			  					"\nWriting files now." );
+			// TODO: Don't overwrite files
+			// TODO: Check if the directory exists every launch, if it doesn't,
+			// make it but don't consider it the first run. (Sometimes users
+			// will delete the directory on accident).
+			new Message("This is the first time the program has run.");
 
 			// This method doesn't work perfectly. In unix it will return
 			// only the user's home directory. So we add /Documents/ to it.
@@ -95,18 +92,21 @@ public class Settings
 											.getDefaultDirectory().toString();
 			if ( !( os.indexOf( "win" ) >= 0 ) )
 			{
-				docs += "/Documents/";
+				docs += File.separator + "Documents" + File.separator;
 			}
 
-			File main = FileHandler.getFile( docs + "Light_Controller/" );
+			File main = FileHandler.getFile( docs + File.separator +
+										"Light_Controller" + File.separator );
 			if ( !main.exists() )
 			{
 				// Without the application folder, there's no point in running
 				System.exit(1);
 			}
 
-			FileHandler.writeDemos( main.getPath() + "/Plugins/" );
-			PLUGINS_PATH = main.getPath() + "/Plugins/";
+			FileHandler.writeDemos( main.getPath() + File.separator +
+												   "Plugins" + File.separator );
+			PLUGINS_PATH = main.getPath() + File.separator +
+												    "Plugins" + File.separator;
 		}
 	}
 
@@ -126,53 +126,50 @@ public class Settings
 		return firstInstance;
 	}
 
-	private void printSettings()
+	private static void printSettings()
 	{
 		System.out.println( "VISIBLE: " + VISIBLE );
 		System.out.println( "BUFFER_SIZE: " + BUFFER_SIZE );
 		System.out.println( "FRAME_RATE: " + FRAME_RATE );
 		System.out.println( "BAUD_RATE: " + BAUD_RATE );
 		System.out.println( "NUM_LEDS: " + NUM_LEDS );
-		System.out.println( "RESTING_RED: " + RESTING_RED );
-		System.out.println( "RESTING_GREEN: " + RESTING_GREEN );
-		System.out.println( "RESTING_BLUE: " + RESTING_BLUE );
 		System.out.println( "BEACON_PERIOD: " + BEACON_PERIOD );
 		System.out.println( "BEACON_KEY: " + BEACON_KEY );
 		System.out.println( "PLUGINS_PATH: " + PLUGINS_PATH );
 		System.out.println("");
 	}
 
-	public void save( String key, String value )
+	public static void save( String key, String value )
 	{
 		prefs.put( key, value );
 	}
 
-	public void saveBoolean( String key, boolean value )
+	public static void saveBoolean( String key, boolean value )
 	{
 		prefs.putBoolean( key, value );
 	}
 
-	public void saveByteArray( String key, byte[] value )
+	public static void saveByteArray( String key, byte[] value )
 	{
 		prefs.putByteArray( key, value );
 	}
 
-	public void saveDouble( String key, double value )
+	public static void saveDouble( String key, double value )
 	{
 		prefs.putDouble( key, value );
 	}
 
-	public void saveFloat( String key, float value )
+	public static void saveFloat( String key, float value )
 	{
 		prefs.putFloat( key, value );
 	}
 
-	public void saveInt( String key, int value )
+	public static void saveInt( String key, int value )
 	{
 		prefs.putInt( key, value );
 	}
 
-	public void saveLong( String key, long value )
+	public static void saveLong( String key, long value )
 	{
 		prefs.putLong( key, value );
 	}

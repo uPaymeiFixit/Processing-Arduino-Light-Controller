@@ -48,9 +48,7 @@ public class SystemTrayHandler
                 String local_icon = working_directory + "icon.gif";
                 if ( !( new File( local_icon ) ).exists() )
                 {
-                    new Message( "Could not find icon.gif to put in the Syste" +
-                                 "m Tray. We looked in\n" + icon + "\nand\n" +
-                                 local_icon, Message.ERROR );
+                    Message.showError( "Could not find icon.gif to put in the System Tray. We looked in " + icon + " and " + local_icon + "\nThe program will now exit.", "ICON_NOT_FOUND" );
                     System.exit(1);
                 }
                 icon = local_icon;
@@ -81,19 +79,14 @@ public class SystemTrayHandler
             }
             catch ( AWTException e )
             {
-                new Message( "There was a problem creating an icon on the sys" +
-                             "tem tray.\nThis program will now exit.",
-                             Message.ERROR );
-                e.printStackTrace();
+                Message.showError( "There was a problem creating an icon on the system tray.\nThe program will now exit. Below you will find the stack trace for this error.\n", "AWTException_CREATING_ICON", e );
                 System.exit(1);
             }
 
         }
         else
         {
-            new Message( "Light Controller is not suppored on this machine\nd" +
-                         "ue to system tray being unsupported.", Message.ERROR );
-            System.out.println( "Tray is not supported" );
+            Message.showError( "Light Controller is not supported on this machine due to system tray being unsupported.\nThe program will now exit.", "NO_SYS_TRAY" );
             System.exit(1);
         }
     }
@@ -115,17 +108,11 @@ public class SystemTrayHandler
             {
                 try
                 {
-                    // Open the Plugins folder
-                    Desktop.getDesktop().open(
-                            new File( Settings.getInstance().PLUGINS_PATH ) );
+                    Desktop.getDesktop().open( FileHandler.getFile( Settings.PLUGINS_PATH ) );
                 }
                 catch ( IOException e )
                 {
-                    new Message( "Could not automatically open the plugins fo" +
-                                 "lder. Are you sure it exists? It should be " +
-                                 "at Documents/Light_Controller/Plugins/",
-                                 Message.WARNING );
-                    e.printStackTrace();
+                    Message.showWarning( "We could not automatically open the plugins folder. Below is the stack trace for this error.\n", "COULD_NOT_OPEN_PLUGINS", e );
                 }
             }
         });
@@ -253,25 +240,8 @@ public class SystemTrayHandler
             @Override
             public void actionPerformed( ActionEvent e )
             {
-                String input = JOptionPane.showInputDialog(
-                        "You will need to change NUM_LEDS in Arduion.ion for " +
-                        "this to work.", "Number of controllable LED segmetns" );
-                try
-                {
-                    int number = Integer.parseInt( input );
-                    if ( number < 1 )
-                    {
-                        throw new NumberFormatException();
-                    }
-
-                    Settings.getInstance().saveInt( "NUM_LEDS", number );
-                    plugin.instantiateLEDs( number );
-                }
-                catch ( NumberFormatException e2 )
-                {
-                    new Message( "You must enter an integer which is above 0",
-                                 Message.WARNING );
-                }
+                int input = Message.getPositiveInt( "Enter the number of controllable LED segments on your light strip. (You will need to change NUM_LEDS in Arduino.ino for this to work.)", Integer.toString( Settings.NUM_LEDS ) );
+                plugin.instantiateLEDs( input );
             }
         });
         menu.add( set_led_count );
@@ -286,26 +256,8 @@ public class SystemTrayHandler
             @Override
             public void actionPerformed( ActionEvent e )
             {
-                String input = JOptionPane.showInputDialog(
-                        "You will need to change BAUD_RATE in Arduion.ino\n" +
-                        "for this to work. The current baud rate is " +
-                        Settings.getInstance().BAUD_RATE, "Serial baud rate" );
-                try
-                {
-                    int number = Integer.parseInt( input );
-                    if ( number < 1 )
-                    {
-                        throw new NumberFormatException();
-                    }
-
-                    Settings.getInstance().saveInt( "BAUD_RATE", number );
-                    SerialHandler.getInstance().setBaudRate( number );
-                }
-                catch ( NumberFormatException e2 )
-                {
-                    new Message( "You must enter an integer which is above 0",
-                                 Message.WARNING );
-                }
+                int input = Message.getPositiveInt( "Enter the desired baud rate used to communicate with the Arduino. If you are having problems finding the Arduino, it is recommended that you change the baud rate to 9600. The default bad raute is 115200. (You will need to change BAUD_RATE in Arduino.ino for this to work.)", Integer.toString( Settings.BAUD_RATE ) );
+                SerialHandler.getInstance().setBaudRate( input );
             }
         });
         menu.add( set_baud );

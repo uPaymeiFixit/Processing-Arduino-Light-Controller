@@ -51,7 +51,7 @@ public class SerialHandler
 	public void setBaudRate( int baud_rate )
 	{
 		this.BAUD_RATE = baud_rate;
-		Settings.getInstance().saveInt( "BAUD_RATE", baud_rate );
+		Settings.saveInt( "BAUD_RATE", baud_rate );
 		refresh();
 	}
 
@@ -163,12 +163,12 @@ public class SerialHandler
 			// If we've gotten this far, there are no more devices left
 			// TODO:- add a message saying maybe Arduino is Open
 			// TODO:- in the readme say to quit Arduino Studio
-			new Message( "We couldn't find the Arduino!\nAre you sure it's pl" +
+			Message.showWarning( "We couldn't find the Arduino!\nAre you sure it's pl" +
 						 "ugged in?\nAre any programs such as the Arduino IDE" +
-						 " using it?\nMaybe try changing the baud rate. \n If" +
+						 " using it?\nMaybe try changing the baud rate. \nIf " +
 						 "you still need help take a look at the following li" +
 						 "nk:\nhttps://github.com/processing/processing/wiki/" +
-						 "Serial-Issues", Message.ERROR );
+						 "Serial-Issues", "NO_ARDUINO" );
 		}
 	}
 

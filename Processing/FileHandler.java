@@ -40,15 +40,13 @@ public class FileHandler
 				// We're only going to show this error once, because chances are
 				// if it failed once, it's going to fail over and over again.
 				suppress = true;
-				new Message( "We couldn't create the demo " + demo_name + "It" +
-							 "'s okay! You can grab all of the demos here: ht" +
+				Message.showWarning( "We couldn't create the demo " + demo_name + "It" +
+							 "'s okay! You can grab all of the demos <a href=\"ht" +
 							 "tps://github.com/uPaymeiFixit/Processing-Arduin" +
-							 "o-Light-Organ/tree/master/Processing/Plugins\nA" +
+							 "o-Light-Organ/tree/master/Processing/Plugins\">here</a> a" +
 							 "nd place them in your Documents/Light_Controlle" +
-							 "r/Plugins/ foldre.",
-							 Message.WARNING );
+							 "r/Plugins/ folder. Below is the stack trace for this error.\n", "FileNotFoundException_CANT_MAKE_DEMO_FILES", e );
 			}
-			e.printStackTrace();
 		}
 		finally
 		{
@@ -73,9 +71,9 @@ public class FileHandler
 			}
 			catch ( SecurityException e )
 			{
-				new Message( "Well this is odd... Somehow we couldn't create " +
+				Message.showWarning( "Well this is odd... Somehow we couldn't create " +
 							 folder_name + " The program may or may not crash" +
-							 " now... Sorry about that. :(", Message.WARNING );
+							 " now... Sorry about that. :( Below you will find the stack trace for this error.\n", "SecurityException_CREATE_FOLDER", e );
 			}
 		}
 		return file;

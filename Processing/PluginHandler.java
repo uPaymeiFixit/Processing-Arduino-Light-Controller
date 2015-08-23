@@ -27,6 +27,8 @@ public class PluginHandler
 
     public void instantiateLEDs( int num_leds )
     {
+        Settings.saveInt( "NUM_LEDS", num_leds );
+
         if ( leds != null )
         {
             // Unload the script
@@ -54,15 +56,13 @@ public class PluginHandler
             }
             catch ( ScriptException e )
             {
-                new Message( "It appears as though there may be an error in y" +
-                             "our script. Here is the stack trace:\n", e );
-                e.printStackTrace();
+                Message.showWarning( "It appears as though there may be an error in y" +
+                             "our script. Here is the stack trace:\n", "ScriptException_DURING_UPDATE", e );
             }
             catch ( NoSuchMethodException e )
             {
-                new Message( "We can't find the \"update()\" function in your" +
-                             "script. Are you sure it's there?", Message.ERROR );
-                e.printStackTrace();
+                Message.showWarning( "We can't find the \"update()\" function in your" +
+                             "script. Are you sure it's there? Here is the stack trace:\n", "NoSuchMethodException", e );
             }
 
             return true;
@@ -74,9 +74,9 @@ public class PluginHandler
     {
         for ( int i = 0; i < leds.length; i++ )
         {
-            leds[i][0] = Settings.getInstance().RESTING_RED;
-            leds[i][1] = Settings.getInstance().RESTING_GREEN;
-            leds[i][2] = Settings.getInstance().RESTING_BLUE;
+            leds[i][0] = 0;
+            leds[i][1] = 0;
+            leds[i][2] = 0;
         }
 
         // the main update loop won't send this since this class's update method
@@ -113,16 +113,14 @@ public class PluginHandler
         }
         catch (ScriptException e)
         {
-            new Message( "It appears as though there may be an error in y" +
-                         "our script. Here is the stack trace:\n", e );
-            e.printStackTrace();
+            Message.showWarning( "It appears as though there may be an error in y" +
+                         "our script. Here is the stack trace:\n", "ScriptException_DURING_INIT", e );
             return;
         }
         catch (FileNotFoundException e)
         {
-            new Message( "We couldn't load the plugin! Are you sure the file " +
-                         " is still there?" );
-            e.printStackTrace();
+            Message.showWarning( "We couldn't load the plugin! Are you sure the file " +
+                         " is still there? Below is the stack trace for this error.\n", "FileNotFoundException_SCRIPT_FILE", e );
             return;
         }
 
