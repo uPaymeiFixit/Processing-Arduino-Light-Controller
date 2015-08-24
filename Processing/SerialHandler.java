@@ -4,15 +4,6 @@ import processing.serial.Serial;
 // Singleton class
 public class SerialHandler
 {
-	// Time in between beacons (units: milliseconds)
-	private static final int BEACON_PERIOD = Settings.getInstance().BEACON_PERIOD;
-
-	// Unique byte that the desktop program should recognize
-	private static final byte BEACON_KEY = Settings.getInstance().BEACON_KEY;
-
-	// Serial baud rate. Should match desktop program.
-	private int BAUD_RATE = Settings.getInstance().BAUD_RATE;
-
 	public static final byte NAME = 0;
 	public static final byte INDEX = 1;
 	public static final byte AUTO = 2;
@@ -50,8 +41,7 @@ public class SerialHandler
 
 	public void setBaudRate( int baud_rate )
 	{
-		this.BAUD_RATE = baud_rate;
-		Settings.saveInt( "BAUD_RATE", baud_rate );
+		Settings.saveBAUD_RATE( baud_rate );
 		refresh();
 	}
 
@@ -84,12 +74,12 @@ public class SerialHandler
 
 	public Serial getSerial( int index )
 	{
-		return new Serial( applet, Serial.list()[index], BAUD_RATE );
+		return new Serial( applet, Serial.list()[index], Settings.BAUD_RATE );
 	}
 
 	public Serial getSerial( String name )
 	{
-		return new Serial( applet, name, BAUD_RATE );
+		return new Serial( applet, name, Settings.BAUD_RATE );
 	}
 
 	public void setSerial( int index )
@@ -125,14 +115,14 @@ public class SerialHandler
 	        {
 	            System.out.println( "Trying serial port " + Serial.list()[i] );
 				// This throws the exceptin if it can't run
-	            serial = new Serial( applet, Serial.list()[i], BAUD_RATE );
+	            serial = new Serial( applet, Serial.list()[i], Settings.BAUD_RATE );
 
 	            System.out.println( "    Connected.\n    Listening for Arduin" +
 				 					"o beacon..." );
 	            // We will wait for the device to send us information
 				try
 				{
-				    Thread.sleep( BEACON_PERIOD+1 );
+				    Thread.sleep( Settings.BEACON_PERIOD+1 );
 				}
 				catch ( InterruptedException e )
 				{
@@ -140,7 +130,7 @@ public class SerialHandler
 				    Thread.currentThread().interrupt();
 				}
 	            // If the device sends us a matching byte, we found it
-	            if ( serial.read() == BEACON_KEY )
+	            if ( serial.read() == Settings.BEACON_KEY )
 	            {
 	                System.out.println( "    \nArduino found on " +
 										Serial.list()[i] + '\n' );

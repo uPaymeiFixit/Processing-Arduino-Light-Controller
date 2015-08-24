@@ -1,10 +1,11 @@
-import java.io.File;
 import java.util.prefs.Preferences;
-import javax.swing.JFileChooser;
 
 // Singleton class: We don't need this more than once
 public class Settings
 {
+	// Created to keep users from instantiation
+	private Settings() {}
+
 	private static String PACKAGE_NAME = "tk.gibbs.ColorOrgan";
 	private static Preferences prefs;
 
@@ -12,7 +13,13 @@ public class Settings
 	// These preferences can be found in
 	// ~/Library/Preferences/com.apple.java.util.prefs.plist
 
+
+	// This should only be true if this is the first time this program has run
+	public static boolean FIRST_RUN = true;
+
 	// Sets the GUI to show/not show
+	// In order for this to work, we have to compile using Processing 2.2.1
+	// newer versions seem to ignore this.
 	public static boolean VISIBLE = false;
 
 	// Size of the audio input buffer
@@ -37,141 +44,78 @@ public class Settings
 	// Default path for the plugins (Documens/Light_Controller/Plugins)
 	public static String PLUGINS_PATH = "";
 
-	public static String LAST_PLUGIN = "";
+	// This is the location of the last active plugin
+	public static String ACTIVE_PLUGIN = "";
 
 
-	// Created to keep users from instantiation
-	// Only Settings will be able to instantiate this class
-	private Settings()
+	public static void init()
 	{
-
-		// TODO: add settings.updateBaudRate() etc and then remove anything that
-		// matches "= Settings.*";
 		// This will define a node in which the preferences can be stored
 		prefs = Preferences.userRoot().node( PACKAGE_NAME );
 
-		VISIBLE = prefs.getBoolean( "VISIBLE", VISIBLE );
-		prefs.putBoolean( "VISIBLE", VISIBLE );
-		BUFFER_SIZE = prefs.getInt( "BUFFER_SIZE", BUFFER_SIZE );
-		prefs.putInt( "BUFFER_SIZE", BUFFER_SIZE );
-		FRAME_RATE = prefs.getInt( "FRAME_RATE", FRAME_RATE );
-		prefs.putInt( "FRAME_RATE", FRAME_RATE );
-		BAUD_RATE = prefs.getInt( "BAUD_RATE", BAUD_RATE );
-		prefs.putInt( "BAUD_RATE", BAUD_RATE );
-		NUM_LEDS = prefs.getInt( "NUM_LEDS", NUM_LEDS );
-		prefs.putInt( "NUM_LEDS", NUM_LEDS );
-		BEACON_PERIOD = prefs.getInt( "BEACON_PERIOD", BEACON_PERIOD );
-		prefs.putInt( "BEACON_PERIOD", BEACON_PERIOD );
-		BEACON_KEY = (byte) prefs.getInt( "BEACON_KEY", BEACON_KEY );
-		prefs.putInt( "BEACON_KEY", BEACON_KEY );
-		PLUGINS_PATH = prefs.get( "PLUGINS_PATH", PLUGINS_PATH );
-		initializePluginsFolder();
-		prefs.put( "PLUGINS_PATH", PLUGINS_PATH );
+		// This will try to read constants from the preferences file, and return
+		// defaults if it could not find them.
+		FIRST_RUN     =        prefs.getBoolean( "FIRST_RUN    ", FIRST_RUN     );
+		VISIBLE       =        prefs.getBoolean( "VISIBLE      ", VISIBLE       );
+		BUFFER_SIZE   =        prefs.getInt    ( "BUFFER_SIZE  ", BUFFER_SIZE   );
+		FRAME_RATE    =        prefs.getInt    ( "FRAME_RATE   ", FRAME_RATE    );
+		BAUD_RATE     =        prefs.getInt    ( "BAUD_RATE    ", BAUD_RATE     );
+		NUM_LEDS      =        prefs.getInt    ( "NUM_LEDS     ", NUM_LEDS      );
+		BEACON_PERIOD =        prefs.getInt    ( "BEACON_PERIOD", BEACON_PERIOD );
+		BEACON_KEY    = (byte) prefs.getInt    ( "BEACON_KEY   ", BEACON_KEY    );
+		PLUGINS_PATH  =        prefs.get       ( "PLUGINS_PATH ", PLUGINS_PATH  );
+		ACTIVE_PLUGIN =        prefs.get       ( "ACTIVE_PLUGIN", ACTIVE_PLUGIN );
+
+		// This will save all of the constants to the preferences file (just in
+		// case they were not there to begin with).
+		// saveFIRST_RUN    ( FIRST_RUN     );
+		saveVISIBLE      ( VISIBLE       );
+		saveBUFFER_SIZE  ( BUFFER_SIZE   );
+		saveFRAME_RATE   ( FRAME_RATE    );
+		saveBAUD_RATE    ( BAUD_RATE     );
+		saveNUM_LEDS     ( NUM_LEDS      );
+		saveBEACON_PERIOD( BEACON_PERIOD );
+		saveBEACON_KEY   ( BEACON_KEY    );
+		// savePLUGINS_PATH ( PLUGINS_PATH  );
+		saveACTIVE_PLUGIN( ACTIVE_PLUGIN );
+
 
 		printSettings();
-	}
 
-	private void initializePluginsFolder()
-	{
-		// If the plugins path is not set, this is a first run
-		if ( PLUGINS_PATH.equals("") )
+		if ( FIRST_RUN )
 		{
-			// TODO: Don't overwrite files
-			// TODO: Check if the directory exists every launch, if it doesn't,
-			// make it but don't consider it the first run. (Sometimes users
-			// will delete the directory on accident).
-			new Message("This is the first time the program has run.");
-
-			// This method doesn't work perfectly. In unix it will return
-			// only the user's home directory. So we add /Documents/ to it.
-			// Also has a lot of potential for failure in Windows since
-			// Windows seems to have an ever-shifting idea of what the
-			// Documents folder should be.
-			String os = System.getProperty( "os.name" ).toLowerCase();
-			String docs = new JFileChooser().getFileSystemView()
-											.getDefaultDirectory().toString();
-			if ( !( os.indexOf( "win" ) >= 0 ) )
-			{
-				docs += File.separator + "Documents" + File.separator;
-			}
-
-			File main = FileHandler.getFile( docs + File.separator +
-										"Light_Controller" + File.separator );
-			if ( !main.exists() )
-			{
-				// Without the application folder, there's no point in running
-				System.exit(1);
-			}
-
-			FileHandler.writeDemos( main.getPath() + File.separator +
-												   "Plugins" + File.separator );
-			PLUGINS_PATH = main.getPath() + File.separator +
-												    "Plugins" + File.separator;
+			Settings.saveFIRST_RUN( false );
+			new Message( "This is the first time you have run this program." );
 		}
 	}
 
-	private static Settings firstInstance = null;
-	public static Settings getInstance()
+	public static void printSettings()
 	{
-		if ( firstInstance == null )
-		{
-			synchronized ( Settings.class )
-			{
-				if ( firstInstance == null )
-				{
-					firstInstance = new Settings();
-				}
-			}
-		}
-		return firstInstance;
+		System.out.println(
+			"\n************* PREFS **************\n" +
+			"FIRST_RUN:     " + FIRST_RUN     + "\n" +
+			"VISIBLE:       " + VISIBLE       + "\n" +
+			"BUFFER_SIZE:   " + BUFFER_SIZE   + "\n" +
+			"FRAME_RATE:    " + FRAME_RATE    + "\n" +
+			"BAUD_RATE:     " + BAUD_RATE     + "\n" +
+			"NUM_LEDS:      " + NUM_LEDS      + "\n" +
+			"BEACON_PERIOD: " + BEACON_PERIOD + "\n" +
+			"BEACON_KEY:    " + BEACON_KEY    + "\n" +
+			"PLUGINS_PATH:  " + PLUGINS_PATH  + "\n" +
+			"ACTIVE_PLUGIN: " + ACTIVE_PLUGIN + "\n" +
+			"**********************************\n"
+		);
 	}
 
-	private static void printSettings()
-	{
-		System.out.println( "VISIBLE: " + VISIBLE );
-		System.out.println( "BUFFER_SIZE: " + BUFFER_SIZE );
-		System.out.println( "FRAME_RATE: " + FRAME_RATE );
-		System.out.println( "BAUD_RATE: " + BAUD_RATE );
-		System.out.println( "NUM_LEDS: " + NUM_LEDS );
-		System.out.println( "BEACON_PERIOD: " + BEACON_PERIOD );
-		System.out.println( "BEACON_KEY: " + BEACON_KEY );
-		System.out.println( "PLUGINS_PATH: " + PLUGINS_PATH );
-		System.out.println("");
-	}
-
-	public static void save( String key, String value )
-	{
-		prefs.put( key, value );
-	}
-
-	public static void saveBoolean( String key, boolean value )
-	{
-		prefs.putBoolean( key, value );
-	}
-
-	public static void saveByteArray( String key, byte[] value )
-	{
-		prefs.putByteArray( key, value );
-	}
-
-	public static void saveDouble( String key, double value )
-	{
-		prefs.putDouble( key, value );
-	}
-
-	public static void saveFloat( String key, float value )
-	{
-		prefs.putFloat( key, value );
-	}
-
-	public static void saveInt( String key, int value )
-	{
-		prefs.putInt( key, value );
-	}
-
-	public static void saveLong( String key, long value )
-	{
-		prefs.putLong( key, value );
-	}
+	public static void saveFIRST_RUN    ( boolean _FIRST_RUN     ) { FIRST_RUN     = _FIRST_RUN    ; prefs.putBoolean( "FIRST_RUN    ", FIRST_RUN     ); }
+	public static void saveVISIBLE      ( boolean _VISIBLE       ) { VISIBLE       = _VISIBLE      ; prefs.putBoolean( "VISIBLE      ", VISIBLE       ); }
+	public static void saveBUFFER_SIZE  ( int     _BUFFER_SIZE   ) { BUFFER_SIZE   = _BUFFER_SIZE  ; prefs.putInt    ( "BUFFER_SIZE  ", BUFFER_SIZE   ); }
+	public static void saveFRAME_RATE   ( int     _FRAME_RATE    ) { FRAME_RATE    = _FRAME_RATE   ; prefs.putInt    ( "FRAME_RATE   ", FRAME_RATE    ); }
+	public static void saveBAUD_RATE    ( int     _BAUD_RATE     ) { BAUD_RATE     = _BAUD_RATE    ; prefs.putInt    ( "BAUD_RATE    ", BAUD_RATE     ); }
+	public static void saveNUM_LEDS     ( int     _NUM_LEDS      ) { NUM_LEDS      = _NUM_LEDS     ; prefs.putInt    ( "NUM_LEDS     ", NUM_LEDS      ); }
+	public static void saveBEACON_PERIOD( int     _BEACON_PERIOD ) { BEACON_PERIOD = _BEACON_PERIOD; prefs.putInt    ( "BEACON_PERIOD", BEACON_PERIOD ); }
+	public static void saveBEACON_KEY   ( byte    _BEACON_KEY    ) { BEACON_KEY    = _BEACON_KEY   ; prefs.putInt    ( "BEACON_KEY   ", BEACON_KEY    ); }
+	public static void savePLUGINS_PATH ( String  _PLUGINS_PATH  ) { PLUGINS_PATH  = _PLUGINS_PATH ; prefs.put       ( "PLUGINS_PATH ", PLUGINS_PATH  ); }
+	public static void saveACTIVE_PLUGIN( String  _ACTIVE_PLUGIN ) { ACTIVE_PLUGIN = _ACTIVE_PLUGIN; prefs.put       ( "ACTIVE_PLUGIN", ACTIVE_PLUGIN ); }
 
 }

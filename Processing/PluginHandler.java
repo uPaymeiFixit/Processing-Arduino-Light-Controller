@@ -15,33 +15,30 @@ public class PluginHandler
     private Invocable invocable_engine;
     private BeatDetect beat;
     private FFT fft;
-    public String loaded_file;
 
     public PluginHandler( BeatDetect beat, FFT fft )
     {
         this.beat = beat;
         this.fft = fft;
 
-        instantiateLEDs( Settings.getInstance().NUM_LEDS );
+        instantiateLEDs( Settings.NUM_LEDS );
     }
 
     public void instantiateLEDs( int num_leds )
     {
-        Settings.saveInt( "NUM_LEDS", num_leds );
+        Settings.saveNUM_LEDS( num_leds );
 
-        if ( leds != null )
-        {
-            // Unload the script
-            unload();
-        }
+        // Unload the script
+        unload();
 
         // Initialize the leds array
         leds = new int[num_leds][3];
 
-        if ( loaded_file != null )
+        // Reload the script
+        if ( !Settings.ACTIVE_PLUGIN.equals("") )
         {
-            // Reload the script
-            load( loaded_file );
+            System.out.println(Settings.ACTIVE_PLUGIN);
+            load( Settings.ACTIVE_PLUGIN );
         }
     }
 
@@ -72,16 +69,19 @@ public class PluginHandler
 
     public void resetLeds()
     {
-        for ( int i = 0; i < leds.length; i++ )
+        if ( leds != null )
         {
-            leds[i][0] = 0;
-            leds[i][1] = 0;
-            leds[i][2] = 0;
-        }
+            for ( int i = 0; i < leds.length; i++ )
+            {
+                leds[i][0] = 0;
+                leds[i][1] = 0;
+                leds[i][2] = 0;
+            }
 
-        // the main update loop won't send this since this class's update method
-        // returs false, so we have to manually send the black leds.
-        SerialHandler.getInstance().sendLEDs( leds );
+            // the main update loop won't send this since this class's update method
+            // returs false, so we have to manually send the black leds.
+            SerialHandler.getInstance().sendLEDs( leds );
+        }
     }
 
     public void unload()
@@ -127,7 +127,7 @@ public class PluginHandler
         // cast the engine to an invocable object for use later
         invocable_engine = (Invocable) engine;
 
-        loaded_file = file_location;
+        Settings.saveACTIVE_PLUGIN( file_location );
     }
 
 }

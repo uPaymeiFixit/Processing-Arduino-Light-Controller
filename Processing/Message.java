@@ -13,20 +13,12 @@ import java.awt.Font;
 
 public class Message
 {
-	// Icons
-	public static final int WARNING     = JOptionPane.WARNING_MESSAGE;
-	public static final int ERROR       = JOptionPane.ERROR_MESSAGE;
-	public static final int QUESTION    = JOptionPane.QUESTION_MESSAGE;
-	public static final int PLAIN       = JOptionPane.PLAIN_MESSAGE;
-	public static final int INFORMATION = JOptionPane.INFORMATION_MESSAGE;
-
-	// WARNING - usually recoverable
-	// ERROR - usually non-recoverable
-	// QUESTION - asking for input
-	// INFORMATION - giving information
-	// PLAIN - no use yet
-
-	public Message() {}
+	// Icon guidelines
+	// JOptionPane.WARNING_MESSAGE - Usually recoverable
+	// JOptionPane.ERROR_MESSAGE - Usually not recoverable
+	// JOptionPane.QUESTION_MESSAGE - Asking for input
+	// JOptionPane.PLAIN_MESSAGE - No use yet
+	// JOptionPane.INFORMATION_MESSAGE - Giving information
 
 	public Message( String message )
 	{
@@ -74,7 +66,7 @@ public class Message
 					  "bug, report it <a href=\""+issue_link+"\">here</a> or " +
 					  "contact J@Gibbs.tk";
 
-		showDialog( html, "Light Controller Message", INFORMATION );
+		showDialog( html, "Light Controller Message", JOptionPane.INFORMATION_MESSAGE );
 	}
 
 	// Shows a warning with the given message, error name, and exception trace
@@ -100,7 +92,7 @@ public class Message
 					  "bug, report it <a href=\""+issue_link+"\">here</a> or " +
 					  "contact J@Gibbs.tk";
 
-		showDialog( html, "Light Controller Warning: " + error_name, WARNING );
+		showDialog( html, "Light Controller Warning: " + error_name, JOptionPane.WARNING_MESSAGE );
 	}
 
 	// Shows a warning with the given message, error name, and exception trace
@@ -126,7 +118,7 @@ public class Message
 					  "bug, report it <a href=\""+issue_link+"\">here</a> or " +
 					  "contact J@Gibbs.tk";
 
-		showDialog( html, "Light Controller Error: " + error_name, ERROR );
+		showDialog( html, "Light Controller Error: " + error_name, JOptionPane.ERROR_MESSAGE );
 	}
 
 	// Shows a dialog with the given HTML, and handles clickable links
@@ -140,7 +132,7 @@ public class Message
 		StringBuffer style = new StringBuffer("font-family:" + font.getFamily() + ";");
 		style.append("font-weight:" + (font.isBold() ? "bold" : "normal") + ";");
 		style.append("font-size:" + font.getSize() + "pt;");
-
+		html = html.replaceAll("(\r\n|\n)", "<br />");
 		JEditorPane ep = new JEditorPane( "text/html", "<html><body style=\"" + style + "\">" + html + "</body></html>" );
 		ep.addHyperlinkListener( new HyperlinkListener()
 		{

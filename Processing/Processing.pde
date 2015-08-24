@@ -18,11 +18,6 @@ import processing.serial.Serial;
 // before.
 private static final boolean MIXER_BUG = true;
 
-// Sets the GUI to show/not show
-// In order for this to work, we have to compile using Processing 2.2.1
-// newer versions seem to ignore this.
-private static final boolean VISIBLE = Settings.getInstance().VISIBLE;
-
 // In order for there to be no dock icon in Mac, I had to add these lines to
 // /Applications/Processing.app/Contents/Java/modes/java/application/Info.plist.tmpl
 //      <key>LSUIElement</key>
@@ -35,11 +30,14 @@ PluginHandler plugin; // Needs global for draw() and setup()
 
 void setup()
 {
+    Settings.init();
+    FileHandler.startupChecks();
+
     // Set up minim / audio input
     minim = new Minim( this );
     if(!MIXER_BUG) in = SelectInput.getInstance().setInput( "Soundflower (2ch)" );
     if (MIXER_BUG) in = minim.getLineIn( Minim.STEREO,
-                                         Settings.getInstance().BUFFER_SIZE );
+                                         Settings.BUFFER_SIZE );
 
     // Set up BeatDetect
     BeatDetect beat = new BeatDetect( in.bufferSize(), in.sampleRate() );
@@ -66,7 +64,7 @@ void setup()
     serial = SerialHandler.getInstance();
 
     // Set frame rate of draw()
-    frameRate( Settings.getInstance().FRAME_RATE );
+    frameRate( Settings.FRAME_RATE );
 
 }
 
@@ -95,7 +93,7 @@ public void stop() {
 }
 
 boolean displayable() {
-    return VISIBLE;
+    return Settings.VISIBLE;
 }
 
 // For debug stuff only.

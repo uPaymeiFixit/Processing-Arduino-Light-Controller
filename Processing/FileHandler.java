@@ -1,11 +1,58 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import javax.swing.JFileChooser;
+
 
 // Singleton class
 public class FileHandler
 {
 	private FileHandler() {}
+
+	public static void startupChecks()
+	{
+
+		// If the plugins path is not set, we will set it
+		if ( Settings.PLUGINS_PATH.equals("") )
+		{
+			// This method doesn't work perfectly. In unix it will return
+			// only the user's home directory. So we add /Documents/ to it.
+			// Also has a lot of potential for failure in Windows since
+			// Windows seems to have an ever-shifting idea of what the
+			// Documents folder should be.
+			String os = System.getProperty( "os.name" ).toLowerCase();
+			String docs = new JFileChooser().getFileSystemView()
+											.getDefaultDirectory().toString();
+			if ( !( os.indexOf( "win" ) >= 0 ) )
+			{
+				docs += File.separator + "Documents" + File.separator;
+			}
+
+			Settings.savePLUGINS_PATH( docs + "Light Controller" + File.separator + "Plugins" + File.separator );
+		}
+
+
+		// Initialize files if they don't exist
+		File plugins = new File ( Settings.PLUGINS_PATH );
+
+		// We want to check if this directory has been created
+		if ( !plugins.exists() )
+		{
+			// This will attempt to create the directory
+			plugins = getFile( Settings.PLUGINS_PATH );
+
+			// Lets check again if it exists
+			if ( !plugins.exists() )
+			{
+				// Something went wrong and we can't load the path
+				System.exit(1);
+			}
+
+			writeDemos( Settings.PLUGINS_PATH );
+		}
+
+	}
+
 
 	public static void writeDemos( String plugins )
 	{
@@ -61,10 +108,20 @@ public class FileHandler
 	// directory, it will try to create it. Giving a warning if it cant.
 	public static File getFile( String folder_name )
 	{
+		// Convert string path to file
 		File file = new File( folder_name );
 
+		// If the file doesn't exist
 		if ( !file.exists() )
 		{
+			// Check if the parent exists, because we can't create a directory
+			// inside a null directory
+			if ( !file.getParentFile().exists() )
+			{
+				// Recursively make directories up the chain until we hit one
+				// that already exists
+				getFile( file.getParent() );
+			}
 			try
 			{
 				file.mkdir();

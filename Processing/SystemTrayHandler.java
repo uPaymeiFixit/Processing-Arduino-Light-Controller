@@ -125,7 +125,7 @@ public class SystemTrayHandler
 
         // Recursively search for and add plugins
         searchForPlugins( menu,
-                new File( Settings.getInstance().PLUGINS_PATH ), plugin_group );
+                new File( Settings.PLUGINS_PATH ), plugin_group );
     }
 
     // Recursively searches for files and directorys and places them in the menu
@@ -144,8 +144,13 @@ public class SystemTrayHandler
                     // Gets the name of the file and takes the extension off the end
                     String file_name =  file.split( "\\.", 2 )[0];
                     final String file_location = files[i].getPath();
+                    boolean state = false;
+                    if ( file_location.equals( Settings.ACTIVE_PLUGIN ) )
+                    {
+                        state = true;
+                    }
                     // Create a radio item based on this name and set the group
-                    final RadioMenuItem radio = new RadioMenuItem( file_name, group );
+                    final RadioMenuItem radio = new RadioMenuItem( file_name, group, state );
 
                     // When this item is clicked, we will load that plugin
                     radio.addItemListener( new ItemListener()
@@ -165,6 +170,7 @@ public class SystemTrayHandler
                                             .getSelectedRadioMenuItem() == null )
                             {
                                 plugin.unload();
+                                Settings.saveACTIVE_PLUGIN("");
                             }
                         }
                     });

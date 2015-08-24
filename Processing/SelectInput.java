@@ -12,7 +12,6 @@ public class SelectInput
     private Mixer mixer;
 
     private static final  int CHANNEL = Minim.STEREO;
-    private static final int BUFFER_SIZE = Settings.getInstance().BUFFER_SIZE;
 
     private Mixer.Info[] mixer_info;
     private Mixer.Info[] usable_inputs;
@@ -52,7 +51,7 @@ public class SelectInput
             mixer = AudioSystem.getMixer( mixer_info[i] );
             minim.setInputMixer( mixer );
             // If it's null, we cannot use it
-            if ( minim.getLineIn( CHANNEL, BUFFER_SIZE ) != null )
+            if ( minim.getLineIn( CHANNEL, Settings.BUFFER_SIZE ) != null )
             {
                 // Otherwise we can
                 usable_inputs_temp[usable_inputs_size++] = mixer_info[i];
@@ -83,7 +82,7 @@ public class SelectInput
     {
         mixer = AudioSystem.getMixer( mixer_info_element );
         minim.setInputMixer( mixer );
-        return minim.getLineIn( CHANNEL, BUFFER_SIZE );
+        return minim.getLineIn( CHANNEL, Settings.BUFFER_SIZE );
     }
 
     // Returns an AudioInput based on the String name
