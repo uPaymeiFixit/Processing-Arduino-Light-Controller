@@ -89,61 +89,82 @@ public class SerialHandler
 		// Close the serial port before we change it.
 		stop();
 		Serial serial = null;
+		boolean suppress = false;
 
-	    // Run through each Serial device
-	    for (int i = 0; i < Serial.list().length; i++)
-	    {
-	        try
-	        {
-	            System.out.println( "Trying serial port " + Serial.list()[i] );
-				// This throws the exceptin if it can't run
-	            serial = new Serial( applet, Serial.list()[i], Settings.BAUD_RATE );
-
-	            System.out.println( "    Connected.\n    Listening for Arduin" +
-				 					"o beacon..." );
-	            // We will wait for the device to send us information
-				try
-				{
-				    Thread.sleep( Settings.BEACON_PERIOD+1 );
-				}
-				catch ( InterruptedException e )
-				{
-				    e.printStackTrace();
-				    Thread.currentThread().interrupt();
-				}
-	            // If the device sends us a matching byte, we found it
-	            if ( serial.read() == Settings.BEACON_KEY )
-	            {
-	                System.out.println( "    \nArduino found on " +
-										Serial.list()[i] + '\n' );
-	                break;
-	            }
-	            System.out.println( "    We didn't receive the Arduino beacon.\n" );
-				serial.stop();
-	        }
-	        catch ( RuntimeException e )
-	        {
-	            System.out.println( "    Could not connect. Maybe it was busy.\n" );
-	        }
-			serial = null;
-	    }
-
-		serial_port = serial;
-
-		if ( serial_port == null )
+		while (true)
 		{
-			// If we've gotten this far, there are no more devices left
-			// TODO:- add a message saying maybe Arduino is Open
-			// TODO:- in the readme say to quit Arduino Studio
-			Message.showWarning(
+
+		    // Run through each Serial device
+		    for (int i = 0; i < Serial.list().length; i++)
+		    {
+		        try
+		        {
+		            System.out.println( "Trying serial port " + Serial.list()[i] );
+					// This throws the exceptin if it can't run
+		            serial = new Serial( applet, Serial.list()[i], Settings.BAUD_RATE );
+
+		            System.out.println( "    Connected.\n    Listening for Arduin" +
+					 					"o beacon..." );
+		            // We will wait for the device to send us information
+					try
+					{
+					    Thread.sleep( Settings.BEACON_PERIOD+1 );
+					}
+					catch ( InterruptedException e )
+					{
+					    e.printStackTrace();
+					    Thread.currentThread().interrupt();
+					}
+		            // If the device sends us a matching byte, we found it
+		            if ( serial.read() == Settings.BEACON_KEY )
+		            {
+		                System.out.println( "    \nArduino found on " +
+											Serial.list()[i] + '\n' );
+		                serial_port = serial;
+
+						// If we've told the user we would notify them when we
+						// found the Arduino:
+						if ( suppress )
+						{
+							new Message(
+								"Whatever you did worked! ;)<br>"+
+								"We found the Arduino on<br>"+
+								Serial.list()[i] );
+						}
+
+						return;
+		            }
+		            System.out.println( "    We didn't receive the Arduino beacon.\n" );
+					serial.stop();
+		        }
+		        catch ( RuntimeException e )
+		        {
+		            System.out.println( "    Could not connect. Maybe it was busy.\n" );
+		        }
+				serial = null;
+		    }
+
+			// we only want to show this error once
+			if ( !suppress )
+			{
+				suppress = true;
+				// If we've gotten this far, there are no more devices left
+				Message.showWarning(
 "We couldn't find the Arduino!<br /><br />"+
-"Are you sure it's plugged in?<br />"+
-"Are any programs such as the Arduino IDE using it?<br />"+
-"Maybe try changing the baud rate.<br />"+
+"We'll keep searching for it and let you know if we find it.<br />"+
+"In the meantime, here are some things to try:<br />"+
+"  - Are you sure it's plugged in?<br />"+
+"  - Are any programs such as the Arduino IDE using it?<br />"+
+"  - Try changing the baud rate in Arduino.ino and the settings<br />"+
+"     to 9600<br /><br />"+
+"Make sure you let at least a minute pass before trying something new<br />"+
 "If you still need help take a look at <a href=\"https://github.com/"+
 "processing/processing/wiki/Serial-Issues\">this</a>.",
 															"NO_ARDUINO" );
+			}
+
 		}
+
 	}
 
 	public static void sendLEDs( int[][] leds )
