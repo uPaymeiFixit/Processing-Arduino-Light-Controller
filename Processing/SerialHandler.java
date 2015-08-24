@@ -135,12 +135,14 @@ public class SerialHandler
 			// If we've gotten this far, there are no more devices left
 			// TODO:- add a message saying maybe Arduino is Open
 			// TODO:- in the readme say to quit Arduino Studio
-			Message.showWarning( "We couldn't find the Arduino!\nAre you sure it's pl" +
-						 "ugged in?\nAre any programs such as the Arduino IDE" +
-						 " using it?\nMaybe try changing the baud rate. \nIf " +
-						 "you still need help take a look at the following li" +
-						 "nk:\nhttps://github.com/processing/processing/wiki/" +
-						 "Serial-Issues", "NO_ARDUINO" );
+			Message.showWarning(
+"We couldn't find the Arduino!<br /><br />"+
+"Are you sure it's plugged in?<br />"+
+"Are any programs such as the Arduino IDE using it?<br />"+
+"Maybe try changing the baud rate.<br />"+
+"If you still need help take a look at <a href=\"https://github.com/"+
+"processing/processing/wiki/Serial-Issues\">this</a>.",
+															"NO_ARDUINO" );
 		}
 	}
 

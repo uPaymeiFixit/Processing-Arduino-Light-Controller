@@ -48,7 +48,13 @@ public class SystemTrayHandler
                 String local_icon = working_directory + "icon.gif";
                 if ( !( new File( local_icon ) ).exists() )
                 {
-                    Message.showError( "Could not find icon.gif to put in the System Tray. We looked in " + icon + " and " + local_icon + "\nThe program will now exit.", "ICON_NOT_FOUND" );
+                    Message.showError(
+"Could not find icon.gif to put in the System Tray. We looked in<br />"+
+icon +
+"<br />and<br />" +
+local_icon +
+"<br /><br />The program will now exit.",
+                                                            "ICON_NOT_FOUND" );
                     System.exit(1);
                 }
                 icon = local_icon;
@@ -79,14 +85,22 @@ public class SystemTrayHandler
             }
             catch ( AWTException e )
             {
-                Message.showError( "There was a problem creating an icon on the system tray.\nThe program will now exit. Below you will find the stack trace for this error.\n", "AWTException_CREATING_ICON", e );
+                Message.showError(
+"There was a problem creating an icon on the system tray.<br />"+
+"The program will now exit.<br />"+
+"Below you will find the stack trace for this error.\n",
+                                            "AWTException_CREATING_ICON", e );
                 System.exit(1);
             }
 
         }
         else
         {
-            Message.showError( "Light Controller is not supported on this machine due to system tray being unsupported.\nThe program will now exit.", "NO_SYS_TRAY" );
+            Message.showError(
+"Light Controller is not supported on this machine<br />"+
+"due to system tray being unsupported.<br />"+
+"The program will now exit.",                               "NO_SYS_TRAY" );
+
             System.exit(1);
         }
     }
@@ -246,8 +260,16 @@ public class SystemTrayHandler
             @Override
             public void actionPerformed( ActionEvent e )
             {
-                int input = Message.getPositiveInt( "Enter the number of controllable LED segments on your light strip. (You will need to change NUM_LEDS in Arduino.ino for this to work.)", Integer.toString( Settings.NUM_LEDS ) );
-                plugin.instantiateLEDs( input );
+                int input = Message.getPositiveInt(
+"Enter the number of controllable LED segments on your light strip.\n"+
+"(You will need to change NUM_LEDS in Arduino.ino for this to work.)",
+                                    Integer.toString( Settings.NUM_LEDS ) );
+
+                // This happens when the user hits cancel
+                if ( input != -1 )
+                {
+                    plugin.instantiateLEDs( input );
+                }
             }
         });
         menu.add( set_led_count );
@@ -262,8 +284,18 @@ public class SystemTrayHandler
             @Override
             public void actionPerformed( ActionEvent e )
             {
-                int input = Message.getPositiveInt( "Enter the desired baud rate used to communicate with the Arduino. If you are having problems finding the Arduino, it is recommended that you change the baud rate to 9600. The default bad raute is 115200. (You will need to change BAUD_RATE in Arduino.ino for this to work.)", Integer.toString( Settings.BAUD_RATE ) );
-                SerialHandler.setBaudRate( input );
+                int input = Message.getPositiveInt(
+"Enter the desired baud rate used to communicate with the Arduino.\n"+
+"If you are having problems finding the Arduino, it is recommended\n"+
+"that you change the baud rate to 9600. The default bad raute is 115200.\n"+
+"(You will need to change BAUD_RATE in Arduino.ino for this to work.)",
+                                    Integer.toString( Settings.BAUD_RATE ) );
+
+                // This happens when the user hits cancel
+                if ( input != -1 )
+                {
+                    SerialHandler.setBaudRate( input );
+                }
             }
         });
         menu.add( set_baud );

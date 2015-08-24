@@ -53,13 +53,18 @@ public class PluginHandler
             }
             catch ( ScriptException e )
             {
-                Message.showWarning( "It appears as though there may be an error in y" +
-                             "our script. Here is the stack trace:\n", "ScriptException_DURING_UPDATE", e );
+                Message.showWarning(
+"It appears as though there may be an error in your script.<br />" +
+"Here is the stack trace:<br />",
+                                        "ScriptException_DURING_UPDATE", e );
             }
             catch ( NoSuchMethodException e )
             {
-                Message.showWarning( "We can't find the \"update()\" function in your" +
-                             "script. Are you sure it's there? Here is the stack trace:\n", "NoSuchMethodException", e );
+                Message.showWarning(
+"We can't find the \"update()\" function in yourscript.<br />" +
+"Are you sure it's there?<br />" +
+"Here is the stack trace:<br />",
+                                                "NoSuchMethodException", e );
             }
 
             return true;
@@ -113,14 +118,18 @@ public class PluginHandler
         }
         catch (ScriptException e)
         {
-            Message.showWarning( "It appears as though there may be an error in y" +
-                         "our script. Here is the stack trace:\n", "ScriptException_DURING_INIT", e );
+            Message.showWarning(
+"It appears as though there may be an error in your script.<br />"+
+"Here is the stack trace:<br />",
+                                            "ScriptException_DURING_INIT", e );
             return;
         }
         catch (FileNotFoundException e)
         {
-            Message.showWarning( "We couldn't load the plugin! Are you sure the file " +
-                         " is still there? Below is the stack trace for this error.\n", "FileNotFoundException_SCRIPT_FILE", e );
+            Message.showWarning(
+"We couldn't load the plugin! Are you sure the file is still there?<br />"+
+"Below is the stack trace for this error.\n",
+                                    "FileNotFoundException_SCRIPT_FILE", e );
             return;
         }
 

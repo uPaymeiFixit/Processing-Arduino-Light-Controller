@@ -31,6 +31,10 @@ public class Message
 		while ( true )
 		{
 			String input = JOptionPane.showInputDialog( message, filled_in );
+			if ( input == null )
+			{
+				return -1;
+			}
 			try
 			{
 				int number = Integer.parseInt( input );
@@ -42,8 +46,8 @@ public class Message
 				if ( !first_fail )
 				{
 					first_fail = true;
-					message = "<b>ERROR: Input must be a positive integer.</b" +
-					">\n\n" + message;
+					message = "ERROR: Input must be a positive integer.<br /><b" +
+					"r>" + message;
 				}
 			}
 		}
@@ -62,7 +66,7 @@ public class Message
 							"error%3F+If+so%2C+how%3F%0D%0A%0D%0A%0D%0A%23%23" +
 							"%23%23+Any+other+information%3F";
 
-		String html = message+"<br><br>If you think this may be a " +
+		String html = message+"<br /><br />If you think this may be a " +
 					  "bug, report it <a href=\""+issue_link+"\">here</a> or " +
 					  "contact J@Gibbs.tk";
 
@@ -88,7 +92,7 @@ public class Message
 							"error%3F+If+so%2C+how%3F%0D%0A%0D%0A%0D%0A%23%23" +
 							"%23%23+Any+other+information%3F";
 
-		String html = message+"<br><br>If you think this may be a " +
+		String html = message+"<br /><br />If you think this may be a " +
 					  "bug, report it <a href=\""+issue_link+"\">here</a> or " +
 					  "contact J@Gibbs.tk";
 
@@ -114,7 +118,7 @@ public class Message
 							"error%3F+If+so%2C+how%3F%0D%0A%0D%0A%0D%0A%23%23" +
 							"%23%23+Any+other+information%3F";
 
-		String html = message+"<br><br>If you think this may be a " +
+		String html = message+"<br /><br />If you think this may be a " +
 					  "bug, report it <a href=\""+issue_link+"\">here</a> or " +
 					  "contact J@Gibbs.tk";
 
