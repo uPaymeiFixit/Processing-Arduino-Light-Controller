@@ -61,7 +61,7 @@ void setup()
     new SystemTrayHandler( plugin, working_directory, in );
 
     // Set up Serial
-    serial = SerialHandler.getInstance();
+    serial = new SerialHandler();
 
     // Set frame rate of draw()
     frameRate( Settings.FRAME_RATE );

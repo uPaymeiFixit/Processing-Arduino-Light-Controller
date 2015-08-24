@@ -1,51 +1,33 @@
 import processing.core.PApplet;
 import processing.serial.Serial;
 
-// Singleton class
 public class SerialHandler
 {
 	public static final byte NAME = 0;
 	public static final byte INDEX = 1;
 	public static final byte AUTO = 2;
 
-	private Serial serial_port;
-	private PApplet applet;
-	private byte MODE;
-	private String name;
-	private int index;
+	private static Serial serial_port;
+	private static PApplet applet;
+	private static byte MODE;
+	private static String name;
+	private static int index;
 
 
-	private SerialHandler()
+	public SerialHandler()
 	{
 		MODE = AUTO;
 		this.applet = new PApplet();
 		detectArduino();
 	}
 
-	private static SerialHandler firstInstance = null;
-	public static SerialHandler getInstance()
-	{
-		if ( firstInstance == null )
-		{
-			synchronized ( SerialHandler.class )
-			{
-				if ( firstInstance == null )
-				{
-					firstInstance = new SerialHandler();
-				}
-			}
-		}
-
-		return firstInstance;
-	}
-
-	public void setBaudRate( int baud_rate )
+	public static void setBaudRate( int baud_rate )
 	{
 		Settings.saveBAUD_RATE( baud_rate );
 		refresh();
 	}
 
-	public void refresh()
+	public static void refresh()
 	{
 		if ( MODE == INDEX )
 		{
@@ -67,41 +49,41 @@ public class SerialHandler
 		return Serial.list();
 	}
 
-	public Serial getSerial()
+	public static Serial getSerial()
 	{
 		return serial_port;
 	}
 
-	public Serial getSerial( int index )
+	public static Serial getSerial( int index )
 	{
 		return new Serial( applet, Serial.list()[index], Settings.BAUD_RATE );
 	}
 
-	public Serial getSerial( String name )
+	public static Serial getSerial( String name )
 	{
 		return new Serial( applet, name, Settings.BAUD_RATE );
 	}
 
-	public void setSerial( int index )
+	public static void setSerial( int _index )
 	{
 		MODE = INDEX;
-		this.index = index;
+		index = _index;
 		// Close the serial port before we change it.
 		stop();
 		serial_port = getSerial( index );
 	}
 
-	public void setSerial( String name )
+	public static void setSerial( String _name )
 	{
 		MODE = NAME;
-		this.name = name;
+		name = _name;
 		// Close the serial port before we change it.
 		stop();
 		serial_port = getSerial( name );
 	}
 
 	// Connects to each serial device and waits for a beacon
-	public void detectArduino()
+	public static void detectArduino()
 	{
 		MODE = AUTO;
 		// Close the serial port before we change it.
@@ -162,7 +144,7 @@ public class SerialHandler
 		}
 	}
 
-	public void sendLEDs( int[][] leds )
+	public static void sendLEDs( int[][] leds )
 	{
 		// This happens when we are setting the baud rate
 		if ( serial_port != null )
@@ -186,7 +168,7 @@ public class SerialHandler
 		return output;
 	}
 
-	public void stop()
+	public static void stop()
 	{
 		// Close the serial port before we change it.
 		if ( serial_port != null )

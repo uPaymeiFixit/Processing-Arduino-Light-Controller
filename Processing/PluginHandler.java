@@ -80,7 +80,7 @@ public class PluginHandler
 
             // the main update loop won't send this since this class's update method
             // returs false, so we have to manually send the black leds.
-            SerialHandler.getInstance().sendLEDs( leds );
+            SerialHandler.sendLEDs( leds );
         }
     }
 

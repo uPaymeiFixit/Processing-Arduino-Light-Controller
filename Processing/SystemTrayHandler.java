@@ -263,7 +263,7 @@ public class SystemTrayHandler
             public void actionPerformed( ActionEvent e )
             {
                 int input = Message.getPositiveInt( "Enter the desired baud rate used to communicate with the Arduino. If you are having problems finding the Arduino, it is recommended that you change the baud rate to 9600. The default bad raute is 115200. (You will need to change BAUD_RATE in Arduino.ino for this to work.)", Integer.toString( Settings.BAUD_RATE ) );
-                SerialHandler.getInstance().setBaudRate( input );
+                SerialHandler.setBaudRate( input );
             }
         });
         menu.add( set_baud );

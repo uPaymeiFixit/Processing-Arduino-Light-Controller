@@ -3,8 +3,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import javax.swing.JFileChooser;
 
-
-// Singleton class
 public class FileHandler
 {
 	private FileHandler() {}

@@ -1,6 +1,5 @@
 import java.util.prefs.Preferences;
 
-// Singleton class: We don't need this more than once
 public class Settings
 {
 	// Created to keep users from instantiation
