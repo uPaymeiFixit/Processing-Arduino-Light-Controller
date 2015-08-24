@@ -84,7 +84,43 @@ public class Settings
 		if ( FIRST_RUN )
 		{
 			Settings.saveFIRST_RUN( false );
-			new Message( "This is the first time you have run this program." );
+
+			String readme = "<a href=\"https://github.com/uPaymeiFixit/Proces" +
+							"sing-Arduino-Light-Controller/blob/master/README" +
+							".md\">README</a>";
+			String here = "<a href=\"https://github.com/uPaymeiFixit/Processi" +
+						  "ng-Arduino-Light-Controller/issues/new?title=Unexp" +
+						  "ected%20%20Bug&body=%23%23%23%23+What+error+messag" +
+						  "e+did+you+get%3F%0D%0A%0D%0A%0D%0A%23%23%23%23+Can" +
+						  "+you+reproduce+this+error%3F+If+so%2C+how%3F%0D%0A" +
+						  "%0D%0A%0D%0A%23%23%23%23+Any+other+information%3F" +
+						  "\">here</a>";
+
+			new Message(
+			"Welcome to Light Controller!<br>"+
+			"<br>"+
+			"This application will let you control your light RGB light strip.<br>"+
+			"An icon should be present in your system tray’s notification area.<br>"+
+			"(The menu bar for Mac, and the taskbar for Windows)<br>"+
+			"<br>"+
+			"From there you can select a pattern to display on your Arduino. <br>"+
+			"<br>"+
+			"This program should try to Automatically connect to the Arduino.<br>"+
+			"If it cannot:<br>"+
+			" - check to make sure than no other programs are using it <br>"+
+			"    (such as the Arduino IDE)<br>"+
+			" - you have uploaded the Arduino.ino file<br>"+
+			" - and your Arduino supports the current baud rate <br>"+
+			"    (115200 by default)<br>"+
+			"<br>"+
+			"To view more information about this program, view the "+readme+".<br>"+
+			"<br>"+
+			"To submit a feature request or a bug, let me know "+here+".<br>"+
+			"<br>"+
+			"To submit a bug, let me know here.<br>"+
+			"<br>"+
+			"v1.5b<br>"+
+			"&copy; 2015 uPaymeiFixit (Josh Gibbs)");
 		}
 	}
 
