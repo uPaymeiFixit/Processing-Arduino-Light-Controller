@@ -115,6 +115,8 @@ public class SerialHandler
 					    e.printStackTrace();
 					    Thread.currentThread().interrupt();
 					}
+								// TODO: It appears as though this is not working in Windows
+								// maybe it is not able to read the data?
 		            // If the device sends us a matching byte, we found it
 		            if ( serial.read() == Settings.BEACON_KEY )
 		            {

@@ -16,6 +16,8 @@ import processing.serial.Serial;
 // A user-workaround for this is to set the default input to whatever you want
 // it to be, start the program, and then change it back to whatever it was
 // before.
+// TODO: To possibly fix this, take a look at this:
+//  http://docs.oracle.com/javase/tutorial/sound/accessing.html
 private static final boolean MIXER_BUG = true;
 
 // In order for there to be no dock icon in Mac, I had to add these lines to
@@ -75,6 +77,10 @@ void draw()
     {
         // TODO: Should this be here?
         // beat.detect(in.mix);
+        // To solve this question we will try three things:
+        //  1: Run this in the update loop
+        //  2: sendLEDs() in the listener
+        //  3: make a buffer
 
         // After that we will send the array to the Arduino
         // The format of the expected data is as follows:
@@ -97,17 +103,19 @@ boolean displayable() {
 }
 
 // For debug stuff only.
-void keyPressed()
-{
-  switch( key )
-  {
-    case '2':
-      SelectInput.getInstance().refresh();
-      in.close();
-      in = SelectInput.getInstance().setInput( "Soundflower (2ch)" );
-      System.out.println("\nREFRESHED AND RELOADED");
-      break;
-
-    default: break;
-  }
-}
+// void keyPressed()
+// {
+//   switch( key )
+//   {
+//     // This often gets the Audio Mixer working, but only temporarily
+//     // before it freezes again.
+//     case '2':
+//       SelectInput.getInstance().refresh();
+//       in.close();
+//       in = SelectInput.getInstance().setInput( "Soundflower (2ch)" );
+//       System.out.println("\nREFRESHED AND RELOADED");
+//       break;
+//
+//     default: break;
+//   }
+// }
