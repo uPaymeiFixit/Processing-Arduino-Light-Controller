@@ -29,6 +29,7 @@ Minim minim;          // Needs global for stop() and setup()
 AudioInput in;        // Needs global for stop() and setup()
 SerialHandler serial; // Needs global for draw() and setup()
 PluginHandler plugin; // Needs global for draw() and setup()
+SystemTrayHandler tray; // Needs global for draw() and setup()
 
 void setup()
 {
@@ -60,7 +61,7 @@ void setup()
     String working_directory = sketchPath("");
 
     // Load the system tray
-    new SystemTrayHandler( plugin, working_directory, in );
+    tray = new SystemTrayHandler( plugin, working_directory, in );
 
     // Set up Serial
     serial = new SerialHandler();
@@ -69,7 +70,9 @@ void setup()
     frameRate( Settings.FRAME_RATE );
 
 }
-
+// TODO: Move this to Settings
+final int FOLDER_REFRESH_RATE = 1000;
+private int last_folder_refresh = 0;
 void draw()
 {
     // We will let the plugin update the leds array
@@ -87,6 +90,19 @@ void draw()
         //[red0, green0, blue0, red1, green1, blue1, (...), redN, greenN, blueN]
         serial.sendLEDs( plugin.leds );
     }
+
+    // TODO: This works, but whenever this is called, all of the items in the
+    // menu bar slowly disappear and reappear, which is very annoynig when
+    // you're trying to use it.
+    // For now we will just add a button to manually refresh it.
+
+    // Refresh the plugins menu every FOLDER_REFRESH_RATE milliseconds
+    // if ( millis() > last_folder_refresh + FOLDER_REFRESH_RATE )
+    // {
+    //     tray.refreshPlugins();
+    //     last_folder_refresh = millis();
+    // }
+
 }
 
 public void stop() {
@@ -103,19 +119,24 @@ boolean displayable() {
 }
 
 // For debug stuff only.
-// void keyPressed()
-// {
-//   switch( key )
-//   {
-//     // This often gets the Audio Mixer working, but only temporarily
-//     // before it freezes again.
-//     case '2':
-//       SelectInput.getInstance().refresh();
-//       in.close();
-//       in = SelectInput.getInstance().setInput( "Soundflower (2ch)" );
-//       System.out.println("\nREFRESHED AND RELOADED");
-//       break;
-//
-//     default: break;
-//   }
-// }
+void keyPressed()
+{
+  switch( key )
+  {
+    // This often gets the Audio Mixer working, but only temporarily
+    // before it freezes again.
+    case '2':
+        SelectInput.getInstance().refresh();
+        in.close();
+        in = SelectInput.getInstance().setInput( "Soundflower (2ch)" );
+        System.out.println("\nREFRESHED AND RELOADED");
+        break;
+
+    case '3':
+        tray.refreshPlugins();
+        break;
+
+    default:
+        break;
+  }
+}

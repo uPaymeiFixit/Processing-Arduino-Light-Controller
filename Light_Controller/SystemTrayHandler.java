@@ -104,15 +104,15 @@ local_icon +
             System.exit(1);
         }
     }
-
-    void addPluginsMenu( PopupMenu popup )
+    private Menu plugins_menu;
+    private void addPluginsMenu( PopupMenu popup )
     {
-        Menu plugins_menu = new Menu( "Plugins" );
+        /*Menu*/ plugins_menu = new Menu( "Plugins" );
         popup.add( plugins_menu );
             addPlugins( plugins_menu );
     }
 
-    void addPlugins( Menu menu )
+    private void addPlugins( Menu menu )
     {
         MenuItem open_plugins_folder = new MenuItem( "Open Plugins Folder..." );
         open_plugins_folder.addActionListener( new ActionListener()
@@ -132,6 +132,17 @@ local_icon +
         });
         menu.add( open_plugins_folder );
 
+        MenuItem refresh_plugins = new MenuItem( "Scan Plugins Folder" );
+        refresh_plugins.addActionListener( new ActionListener()
+        {
+            @Override
+            public void actionPerformed( ActionEvent event )
+            {
+                refreshPlugins();
+            }
+        });
+        menu.add( refresh_plugins );
+
         menu.addSeparator();
 
         // Set up a group for all of the radio items to go in
@@ -142,8 +153,23 @@ local_icon +
                 new File( Settings.PLUGINS_PATH ), plugin_group );
     }
 
+    public void refreshPlugins()
+    {
+        // I tried to remove all of the plugins and not the first two items,
+        // but it wouldn't remove some of the plugins
+        // for ( int i = 2; i < plugins_menu.getItemCount(); i++ )
+        // {
+        //     plugins_menu.remove(i);
+        // }
+
+        //searchForPlugins( plugins_menu, new File( Settings.PLUGINS_PATH ), new RadioMenuItemGroup() );
+
+        plugins_menu.removeAll();
+        addPlugins( plugins_menu );
+    }
+
     // Recursively searches for files and directorys and places them in the menu
-    void searchForPlugins( Menu menu, File directory, RadioMenuItemGroup group )
+    private void searchForPlugins( Menu menu, File directory, RadioMenuItemGroup group )
     {
         File[] files = directory.listFiles();
         for ( int i = 0; i < files.length; i++ )
@@ -201,14 +227,14 @@ local_icon +
         }
     }
 
-    void addAudioMenu( PopupMenu popup )
+    private void addAudioMenu( PopupMenu popup )
     {
         Menu audio_input_menu = new Menu( "Audio Input" );
         popup.add( audio_input_menu );
             addAudioInputs( audio_input_menu );
     }
 
-    void addAudioInputs( Menu menu )
+    private void addAudioInputs( Menu menu )
     {
         SelectInput select_input = SelectInput.getInstance();
         RadioMenuItemGroup input_group = new RadioMenuItemGroup();
@@ -245,14 +271,14 @@ local_icon +
         }
     }
 
-    void addSettingsMenu( PopupMenu popup )
+    private void addSettingsMenu( PopupMenu popup )
     {
         Menu settings = new Menu( "Settings " );
         popup.add( settings );
             addSettings( settings );
     }
 
-    void addSettings( Menu menu )
+    private void addSettings( Menu menu )
     {
         MenuItem set_led_count = new MenuItem( "Set LED Count..." );
         set_led_count.addActionListener( new ActionListener()
@@ -302,7 +328,7 @@ local_icon +
     }
 
     // TODO: Make chipsets work
-    void addChipsets( Menu menu )
+    private void addChipsets( Menu menu )
     {
         RadioMenuItemGroup chipset_group = new RadioMenuItemGroup();
         RadioMenuItem spi_595 = new RadioMenuItem( "595", chipset_group );
@@ -317,7 +343,7 @@ local_icon +
         menu.add( spi_TM1809 );
     }
 
-    void addExitItem( PopupMenu popup )
+    private void addExitItem( PopupMenu popup )
     {
         MenuItem exit = new MenuItem( "Exit" );
         exit.addActionListener( new ActionListener()
