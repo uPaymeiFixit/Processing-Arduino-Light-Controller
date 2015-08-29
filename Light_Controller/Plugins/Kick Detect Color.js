@@ -39,13 +39,23 @@ function update()
     if ( BeatDetect.isKick() )
     {
         var rgb = HSVtoRGB( Math.random(), 1, 1 );
-        for( var i = 0; i < leds.length; i++ )
-        {
-            leds[i][0] = rgb.r;
-            leds[i][1] = rgb.g;
-            leds[i][2] = rgb.b;
-        }
+        setLEDs(rgb.r, rgb.g, rgb.b);
     }
+}
+
+function setLED(index, r, g, b)
+{
+	leds[index][0] = r;
+	leds[index][1] = g;
+	leds[index][2] = b;
+}
+
+function setLEDs(r, g, b)
+{
+	for (var i = 0; i < leds.length; i++)
+	{
+		setLED(i, r, g, b);
+	}	
 }
 
 // Taken from here: http://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately
