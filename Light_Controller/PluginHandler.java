@@ -57,6 +57,12 @@ public class PluginHandler
 "It appears as though there may be an error in your script.<br />" +
 "Here is the stack trace:<br />",
                                         "ScriptException_DURING_UPDATE", e );
+                unload();
+                Settings.saveACTIVE_PLUGIN("");
+                // TODO: We cannot call this, so after we have unloaded the
+                // plugins from here, it will still say that this plugin is
+                // checked.
+                // SystemTrayHandler.refreshPlugins();
             }
             catch ( NoSuchMethodException e )
             {
@@ -65,6 +71,12 @@ public class PluginHandler
 "Are you sure it's there?<br />" +
 "Here is the stack trace:<br />",
                                                 "NoSuchMethodException", e );
+                unload();
+                Settings.saveACTIVE_PLUGIN("");
+                // TODO: We cannot call this, so after we have unloaded the
+                // plugins from here, it will still say that this plugin is
+                // checked.
+                // SystemTrayHandler.refreshPlugins();
             }
 
             return true;
