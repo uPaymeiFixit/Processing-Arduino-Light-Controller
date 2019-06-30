@@ -1,6 +1,8 @@
 # Processing Arduino Light Organ
 This project allows you to take control of an LED strip from your computer and use it as a light organ (light visualizer) for the music you are listening to. Additionally you can easily program your own patterns.
 
+![Screen Shot 2019-06-29 at 11 24 54 PM](https://user-images.githubusercontent.com/1683528/60393149-87421300-9ac5-11e9-9c3b-8f425087cdde.png)
+
 This project takes advantage of:
 
  - [Processing](https://processing.org/) - Which the desktop program was written in.
@@ -8,6 +10,12 @@ This project takes advantage of:
  - [Minim](http://code.compartmental.net/tools/minim/) - An audio processing library for Processing.
 
  - FastSPI\_LED - A library for Arduino which allows control over the LED strip. (FastSPI\_LED has since [moved](https://github.com/FastLED/FastLED) and dropped support for the LPD6803 chipset.)
+
+
+
+
+![Screen Shot 2019-06-29 at 11 25 38 PM](https://user-images.githubusercontent.com/1683528/60393151-87421300-9ac5-11e9-949d-917eb8651689.png)
+![Screen Shot 2019-06-29 at 11 26 07 PM](https://user-images.githubusercontent.com/1683528/60393152-87421300-9ac5-11e9-93cb-0d270bde8694.png)
 
 
 # Setup
@@ -31,6 +39,9 @@ The LED strip should have four terminals labeled something along the lines of Co
 
  - The **negative** terminal gets wired to a **GND pin** on the Arduino 
 AND the **negative of the power source** you are using. (If you are using a power brick like the one linked above, you can plug it in and ignore the LAST part of this step)
+
+If you see the message below, the software was unable to find an arduino on an unused serial port.
+![Screen Shot 2019-06-29 at 11 25 18 PM](https://user-images.githubusercontent.com/1683528/60393150-87421300-9ac5-11e9-9762-d2bd6424c794.png)
 
 ### Software
 You will need to download [Processing](https://processing.org/download/) (v2.2.1 recommended) and [Arduino](https://www.arduino.cc/en/Main/Software). 
